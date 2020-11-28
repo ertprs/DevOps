@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "Arquivos Zabbix"
+		},
+		{
+			"path": "Arquivos do Pagamento BB"
+		},
+		{
+			"path": "Arquivos API Huggy v3.0"
+		},
+		{
+			"path": "NODE"
+		},
+		{
+			"path": "Arquvios do site"
+		}
+	],
+	"settings": {}
+}
