@@ -18,3 +18,6 @@ Breve descrição
     - Plataforma de monitoramento completa. Arquivos realizam busca de informações armazenadas no DB para serem trabalhadas no sistema interno
 - Node:
     - Teste iniciais de apredizagem do NODEjs. Iniciando estudo com a linguagem Javascript
+
+
+>>>> Obs.: Se você teve acesso a esse conteúdo e o qual não foi detinado diretamente à você, desconsidere e não o utilize pois o mesmo contém informações retritas do proprietário.
