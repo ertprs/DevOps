@@ -20,4 +20,5 @@ Breve descrição
     - Teste iniciais de apredizagem do NODEjs. Iniciando estudo com a linguagem Javascript
 
 
->>>> Obs.: Se você teve acesso a esse conteúdo e o qual não foi detinado diretamente à você, desconsidere e não o utilize pois o mesmo contém informações retritas do proprietário.
+
+>>  Obs.: Se você teve acesso a esse conteúdo e o qual não foi detinado diretamente à você, desconsidere e não o utilize pois o mesmo contém informações retritas do proprietário. 
