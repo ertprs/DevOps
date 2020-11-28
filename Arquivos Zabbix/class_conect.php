@@ -271,7 +271,7 @@ class ApiZabbixConection {
 		$itemId = "";
 		$i = 0;
 
-		// Executa apenas duas vezes, para buscar o item e depois buscar o historico
+		// Executa apenas dua vezes para buscar o item e depois buscar o historico
 		do {
 
 			if ($itemId == NULL){																						// 1ª interação ainda nao se tem o itemId, buscar o mesmo pelo SN
