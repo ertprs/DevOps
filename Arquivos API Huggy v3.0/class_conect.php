@@ -113,7 +113,10 @@ class ApiHuggyConection {
 						$this->_tokenEmCache = $this->atualizarToken($dados->access_token,$dados->refresh_token);
 						$this->_erro = "Token em cache expirou, foi necessário atualizar a Token! ";
 						if ($this->_tokenEmCache){
-							return $this->_tokenEmCache;
+							return $this->_tokenEmCache = (object) array(				// Retorno do objeto com a token
+								'token' => $this->_tokenEmCache->access_token,
+								'cache' => true
+							);
 						} else 
 							$this->_erro = "Não foi possível atualizar Token em cache! ";
 					}						
