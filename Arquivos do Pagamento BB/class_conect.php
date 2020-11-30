@@ -112,7 +112,7 @@ class BBBoletoWebService {
 				//Obtendo a data do sistema
 				$timezone  = 0;
 				$dataSistem = gmdate(time() + 3600*($timezone+date("I")));//gmdate("d F Y H:i:s.", time() + 3600*($timezone+date("I")));
-				echo "Sistema:\t";print_r($dataSistem);echo " - ";print_r(date("d F Y H:i:s.",$dataSistem));
+				//echo "Sistema:\t";print_r($dataSistem);echo " - ";print_r(date("d F Y H:i:s.",$dataSistem));
 
 				$arquivo = fopen($caminhodoarquivodecache, 'c+');								// Abrindo arquivo para leitura e escrita
 
@@ -121,19 +121,19 @@ class BBBoletoWebService {
 					$dados = json_decode($dados);												// Convertendo dados Json
 
 					$validadeVencida = $dados->expires_in/2 + $timedamodificacao;//date("d F Y H:i:s.",$dados->expires_in/2 + $timedamodificacao);
-					echo "\n";
-					echo "Cache:\t\t";print_r($validadeVencida);echo " - ";print_r(date("d F Y H:i:s.",$validadeVencida));//
-					echo "\n\n";
+					//echo "\n";
+					//echo "Cache:\t\t";print_r($validadeVencida);echo " - ";print_r(date("d F Y H:i:s.",$validadeVencida));//
+					//echo "\n\n";
 
 					if ($dataSistem < $validadeVencida){ 										// Testa se o token chegou ate antes da metade do tempo de expiração
 						$this->_erro = "Token OK! ";											// Retorno de erro
-						echo "passou-cache";
+						//echo "passou-cache";
 						return $this->_tokenEmCache = (object) array(							// Retorno do objeto com a token em chache
 							'token' => $dados->access_token,
 							'cache' => true
 						);
 					} else {																	// Buscando uma nova token
-						echo "passou-vencida";
+						//echo "passou-vencida";
 						$this->_erro = "Token em cache expirou, foi necessário atualizar a Token! ";
 						$this->_tokenEmCache = $this->obterToken(false);						// Chamado a função para obter uma nova Token para conexão na API
 						return $this->_tokenEmCache = (object) array(							// Retorno do objeto com a token
