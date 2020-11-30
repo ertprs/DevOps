@@ -110,9 +110,9 @@ class BBBoletoWebService {
 				$timedamodificacao = filemtime($caminhodoarquivodecache);
 				
 				//Obtendo a data do sistema
-				$timezone  = -3;
+				$timezone  = 0;
 				$dataSistem = gmdate(time() + 3600*($timezone+date("I")));//gmdate("d F Y H:i:s.", time() + 3600*($timezone+date("I")));
-				echo "Sistema:\t";print_r($dataSistem);//date("d F Y H:i:s.",$dataSistem));
+				echo "Sistema:\t";print_r($dataSistem);echo " - ";print_r(date("d F Y H:i:s.",$dataSistem));
 
 				$arquivo = fopen($caminhodoarquivodecache, 'c+');								// Abrindo arquivo para leitura e escrita
 
@@ -122,21 +122,22 @@ class BBBoletoWebService {
 
 					$validadeVencida = $dados->expires_in/2 + $timedamodificacao;//date("d F Y H:i:s.",$dados->expires_in/2 + $timedamodificacao);
 					echo "\n";
-					echo "Cache:\t\t";print_r($validadeVencida);//date("d F Y H:i:s.",$validadeVencida));//
+					echo "Cache:\t\t";print_r($validadeVencida);echo " - ";print_r(date("d F Y H:i:s.",$validadeVencida));//
 					echo "\n\n";
 
 					if ($dataSistem < $validadeVencida){ 										// Testa se o token chegou ate antes da metade do tempo de expiração
 						$this->_erro = "Token OK! ";											// Retorno de erro
+						echo "passou-cache";
 						return $this->_tokenEmCache = (object) array(							// Retorno do objeto com a token em chache
 							'token' => $dados->access_token,
 							'cache' => true
 						);
 					} else {																	// Buscando uma nova token
-						echo "\npassou";
+						echo "passou-vencida";
 						$this->_erro = "Token em cache expirou, foi necessário atualizar a Token! ";
 						$this->_tokenEmCache = $this->obterToken(false);						// Chamado a função para obter uma nova Token para conexão na API
 						return $this->_tokenEmCache = (object) array(							// Retorno do objeto com a token
-							'token' => $dados->access_token,
+							'token' => $this->_tokenEmCache->access_token,
 							'cache' => false
 						);
 					}
@@ -184,10 +185,7 @@ class BBBoletoWebService {
 						$this->_erro = "Não foi possível abrir o arquivo para salvar a Token em cache! ";
 
 					fclose($arquivo);															// Fecha o arquivo
-					return $resultado = (object) array(											// Retorno do objeto com a token
-						'token' => $resultado->access_token,
-						'cache' => false
-					);
+					return $resultado;
 				} else 
 					$this->_erro = $resultado->error_description ?: 'Erro inesperado na resposta do Banco do Brasil';
 			} else
