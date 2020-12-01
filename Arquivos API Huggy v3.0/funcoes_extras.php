@@ -166,7 +166,7 @@
             }
             
             foreach($diasFeriadosM as &$ferM) {                                             // Percorre o array com os feriados municipais
-                if ($ferM == $dataSistem) {
+                if ($ferM == $dataSistem) 
                     $feriado = 2; 
             }
 
@@ -203,7 +203,7 @@
      * Domingos e feriados Nacionais não tem Atendimento Telefônico
      * @return bool Caso seja TRUE está em horario de atendimento, caso FALSE sem atendimento
      */
-    function varificaHorarioComercial()
+    function verificaHorarioComercial()
     {
         //Obtendo a data do sistema
         $timezone  = -3;   										                            // Definindo o Timerzone do horário
@@ -213,35 +213,35 @@
         $horaLimite1 = '08:00:00';                                                          // Inicio do atendimento por telefone
         $horaLimite2 = '20:00:00';                                                          // Fim do atendimento por telefone
 
-        echo $dataSistem ."-". $horaSistem ."\n";
-        echo $horaLimite1."\n";
-        echo $horaLimite2."\n";
-        echo $diaSemana ."\n";
+        //echo $dataSistem ."-". $horaSistem ."\n";
+        //echo $horaLimite1."\n";
+        //echo $horaLimite2."\n";
+        //echo $diaSemana ."\n";
 
         $diasFeriados = diasFeriadosNacionais();
-        print_r($diasFeriados);
+        //print_r($diasFeriados);
         $feriado = 0;
 
         if (($diaSemana >= 1) && ($diaSemana <= 6)) {                                       // Verifica se o dia atual está entre Segunda-feria e Sábado
             foreach($diasFeriados as &$fer) {                                               // Percorre o array com os feriados nacionais
-                if ($fer == $dataSistem){
-                    $feriado = 1;}
+                if ($fer == $dataSistem)
+                    $feriado = 1;
             }
 
             if ($feriado == 1) {                                                            // Verifica se variavel feriado é '1' que indica ser feriado
-                echo "NÃO tem atendimento e é feriado";
+                //echo "NÃO tem atendimento e é feriado";
                 return false;
             } else {
                 if (($horaSistem > $horaLimite1) && ($horaSistem < $horaLimite2)) {         // Verificando se está dentro do horário de atendimento
-                    echo "Tem atendimento e não é feriado";
+                    //echo "Tem atendimento e não é feriado";
                     return true;
                 } else {
-                    echo "NÃO tem atendimento e não é feriado";
+                    //echo "NÃO tem atendimento e não é feriado";
                     return false;
                 }
             }        
         } else if ($diaSemana == 0) {                                                       // Verifica se o dia atual é Domingo
-            echo "NÃO tem atendimento e é Domingo";
+            //echo "NÃO tem atendimento e é Domingo";
             return false;
         }
     }
@@ -381,5 +381,5 @@
         }
     }
     
-    echo "passou";
+    verificaHorarioComercial();
 ?>
