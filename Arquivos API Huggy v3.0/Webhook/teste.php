@@ -1,51 +1,65 @@
-<?php
+<?php 
 
     //Buscando arquivo de Conexão com o DB
     require_once(__DIR__ . DIRECTORY_SEPARATOR . "huggy/conexao.php");
     
-    $arquivo = fopen(__DIR__ . DIRECTORY_SEPARATOR . 'resposta_Webhook.log', 'r');
-    $dados = fread($arquivo,filesize(__DIR__ . DIRECTORY_SEPARATOR . 'resposta_Webhook.log'));
-    fclose($arquivo);
-    
-    $dados = json_decode($dados, true);
-    //$aux = $dados->time;
-    //echo $aux;
-    //print_r($dados);
+    // Imprimindo o token para que seja validado o APP
+    //echo "ec648d68dea6a7493aa67f4d830001bc";
 
-    // Convertendo a data para ser salva
-    $dataCriacao = date("Y-m-d H:i:s", $dados['time']);
+    // Envio de resposta de SUCESSO para o webservice da Huggy com o token do APP
+    // Tratamento para CGI e sem CGI
+    $httpStatusCode = 200;
+    $httpStatusMsg  = 'OK';
+    $phpSapiName    = substr(php_sapi_name(), 0, 3);
+
+    if ($phpSapiName == 'cgi' || $phpSapiName == 'fpm') {
+        header('Status: '.$httpStatusCode.' '.$httpStatusMsg);
+        header('Content-Type: application/json');
+		header('Accept: application/json');
+		header('Authorization: Bearer '. 'ec648d68dea6a7493aa67f4d830001bc');
+    } else {
+        $protocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
+        header($protocol.' '.$httpStatusCode.' '.$httpStatusMsg);
+        header('Content-Type: application/json');
+		header('Accept: application/json');
+		header('Authorization: Bearer '. 'ec648d68dea6a7493aa67f4d830001bc');
+    }
+
+    // Obtendo os dados com informações dos eventos selecionados na página de configuração da Webhook vindos do Webservice
+    $parametros = @file_get_contents("php://input");
+    
+    // Salvando os dados JSON em um arquivo para ser manipulado em testes de inserção no DB
+    $arquivo = fopen("resposta_Webhook.log", "w");
+    fwrite($arquivo, $parametros);
+    fclose($arquivo);
+
+    // Convertendo os dados recebidos de JSON para STRING para serem inseridos no DB
+    $dados = json_decode($parametros, true);
+    
+    // Obtendo a data do evento criado pelo webhook e o token para fins de confirmação
+    $dataCriacao = date('Y-m-d H:i:s', $dados['time']); // Convertendo a data para ser salva
     $token = $dados['token'];
     
-    // Salvando corpo da mensagem para ser lida como string
-    $f = fopen(__DIR__ . DIRECTORY_SEPARATOR . "teste.txt", "w");
+    // Salvando corpo da mensagem para ser lida como STRING
+    $f = fopen("teste.txt", "w");
     fwrite($f, json_encode($dados['messages']));
     fclose($f);
-    // Lendo informações salva para salvar no banco
+    
+    // Lendo informações salvas para salvar no DB
     $messages = '';
-    $fr = fopen(__DIR__ . DIRECTORY_SEPARATOR . "teste.txt", "r");
+    $fr = fopen("teste.txt", "r");
     while(!feof($fr)){
         $messages .= fgetc($fr);
     }
     fclose($fr);
-   
-    echo $messages;
-    //var_dump($dados['messages']['agentEntered']);
-    // Salvando dados no DB na tabela "dados"
-    /*$Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','1','1','1','1','1','1','1','1','','','','1','1','1','1','$token','$messages')";
-    $Resultado = mysqli_query($CONEXAO,$Insere_dado);
-    // Impressão de erros na conexão com o DB
-    if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
-    else{ //echo "Conexao foi realizada com sucesso!";
-    }*/
-    
-    //Excluindo arquivo teste.txt
-	if(unlink(__DIR__ . DIRECTORY_SEPARATOR . "teste.txt") == true){
-		//echo "Arquivo excluido com sucesso!<br>";
+
+    // Excluindo arquivo teste.txt criado somente para o processo de leitura dos dados como STRING
+	if(unlink("teste.txt") == true){ //echo "Arquivo excluido com sucesso!<br>";
 	}else{ echo "Não foi possível excluir o arquivo.<br>";}
 
     // Tratamento do corpo da mensagem
     // Tratando o evento quando possui o createdCustomer
-    if($dados['messages']['createdCustomer'] != NULL){
+    if(isset($dados['messages']['createdCustomer'])){ //$dados['messages']['createdCustomer'] != NULL){
         for ($i=0;$i<count($dados['messages']['createdCustomer']);$i++){
             $customerID = intval($dados['messages']['createdCustomer'][$i]['id']);
             $name = utf8_decode($dados['messages']['createdCustomer'][$i]['name']);
@@ -54,8 +68,8 @@
             $email = utf8_decode($dados['messages']['createdCustomer'][$i]['email']);
             $photo = utf8_decode($dados['messages']['createdCustomer'][$i]['photo']);
             $customFieldsCpf = intval($dados['messages']['createdCustomer'][$i]['custom_fields']['cpf_customer']);
-            $channelName = utf8_decode($dados['messages']['createdCustomer'][$i]['channel_name']);
-            $channelSource = utf8_decode($dados['messages']['createdCustomer'][$i]['channel_source']);
+            $channelName = utf8_decode($dados['messages']['createdCustomer'][$i]['channel']['name']);
+            $channelSource = utf8_decode($dados['messages']['createdCustomer'][$i]['channel']['source']);
             $company = intval($dados['messages']['createdCustomer'][$i]['company']['id']);
             // Variaveis default
             $send_at = date("Y-m-d H:i:s", strtotime("0001-01-01 00:00:00"));
@@ -80,7 +94,7 @@
         }
     } 
     // Tratando o evento quando possui o createdChat
-    if($dados['messages']['createdChat'] != NULL){ 
+    if(isset($dados['messages']['createdChat'])){ //$dados['messages']['createdChat'] != NULL){ 
         for ($i=0;$i<count($dados['messages']['createdChat']);$i++){
             $chatID = intval($dados['messages']['createdChat'][$i]['id']);
             $channel = utf8_decode($dados['messages']['createdChat'][$i]['channel']);
@@ -118,7 +132,7 @@
         }
     }
     // Tratando o evento quando possui o agentEntered
-    if($dados['messages']['agentEntered'] != NULL){ 
+    if(isset($dados['messages']['agentEntered'])){ //$dados['messages']['agentEntered'] != NULL){ 
         for ($i=0;$i<count($dados['messages']['agentEntered']);$i++){
             $chatID = intval($dados['messages']['agentEntered'][$i]['id']);
             $channel = utf8_decode($dados['messages']['agentEntered'][$i]['channel']);
@@ -162,7 +176,7 @@
         }
     }
     // Tratando o evento quando possui o updatedCustomer
-    if($dados['messages']['updatedCustomer'] != NULL){ 
+    if(isset($dados['messages']['updatedCustomer'])){ //$dados['messages']['updatedCustomer'] != NULL){ 
         for ($i=0;$i<count($dados['messages']['updatedCustomer']);$i++){
             $customerID = intval($dados['messages']['updatedCustomer'][$i]['id']);
             $name = utf8_decode($dados['messages']['updatedCustomer'][$i]['name']);
@@ -195,7 +209,7 @@
         }
     } 
     // Tratando o evento quando possui o startedWidgetAttendance
-    if($dados['messages']['startedWidgetAttendance'] != NULL){ 
+    if(isset($dados['messages']['startedWidgetAttendance'])){ //$dados['messages']['startedWidgetAttendance'] != NULL){ 
         for ($i=0;$i<count($dados['messages']['startedWidgetAttendance']);$i++){
             $startedID = intval($dados['messages']['startedWidgetAttendance'][$i]['id']);
             $name = utf8_decode($dados['messages']['startedWidgetAttendance'][$i]['name']);
@@ -229,7 +243,7 @@
         }
     } 
     // Tratando o evento quando possui o receivedAllMessage
-    if($dados['messages']['receivedAllMessage'] != NULL){ 
+    if(isset($dados['messages']['receivedAllMessage'])){ //$dados['messages']['receivedAllMessage'] != NULL){
         for ($i=0;$i<count($dados['messages']['receivedAllMessage']);$i++){
             $receivedID = intval($dados['messages']['receivedAllMessage'][$i]['id']);
             $body = utf8_decode($dados['messages']['receivedAllMessage'][$i]['body']);
@@ -291,7 +305,7 @@
         }
     } 
     // Tratando o evento quando possui o sentAllMessage
-    if($dados['messages']['sentAllMessage'] != NULL){ 
+    if(isset($dados['messages']['sentAllMessage'])){ //$dados['messages']['sentAllMessage'] != NULL){ 
         for ($i=0;$i<count($dados['messages']['sentAllMessage']);$i++){
             $sentID = intval($dados['messages']['sentAllMessage'][$i]['id']);
             $body = utf8_decode($dados['messages']['sentAllMessage'][$i]['body']);
@@ -353,14 +367,14 @@
         }
     } 
     // Tratando o evento quando possui o startedAutomationFlow
-    if($dados['messages']['startedAutomationFlow'] != NULL){ 
+    if(isset($dados['messages']['startedAutomationFlow'])){ //$dados['messages']['startedAutomationFlow'] != NULL){ 
         for ($i=0;$i<count($dados['messages']['startedAutomationFlow']);$i++){
             $chatID = intval($dados['messages']['startedAutomationFlow'][$i]['chatID']);
             $flowID = intval($dados['messages']['startedAutomationFlow'][$i]['flowID']);
             $flowToken = $dados['messages']['startedAutomationFlow'][$i]['flowToken'];
             $context = "SYSTEM.TIME_HELLO:" . $dados['messages']['startedAutomationFlow'][$i]['context']['SYSTEM.TIME_HELLO'] . ", ";
             $context .= "SYSTEM.CHAT_ID:" . $dados['messages']['startedAutomationFlow'][$i]['context']['SYSTEM.CHAT_ID'] . ", ";
-            $context .= "SYSTEM.CHAT_CREATED_DATE:" . date('Y-m-d H-i-s',$dados['messages']['startedAutomationFlow'][$i]['context']['SYSTEM.CHAT_CREATED_DATE']) . ", ";
+            $context .= "SYSTEM.CHAT_CREATED_DATE:" . date('Y-m-d H:i:s', strtotime($dados['messages']['startedAutomationFlow'][$i]['context']['SYSTEM.CHAT_CREATED_DATE'])) . ", ";
             $context .= "SYSTEM.DEPARTMENT_NAME:" . $dados['messages']['startedAutomationFlow'][$i]['context']['SYSTEM.DEPARTMENT_NAME'] . ", ";
             $context .= "SYSTEM.DEPARTMENT_ORDER:" . $dados['messages']['startedAutomationFlow'][$i]['context']['SYSTEM.DEPARTMENT_ORDER'] . ", ";
             $context .= "SYSTEM.CLIENT_NAME:" . $dados['messages']['startedAutomationFlow'][$i]['context']['SYSTEM.CLIENT_NAME'] . ", ";
@@ -404,14 +418,14 @@
         }
     } 
     // Tratando o evento quando possui o finishedAutomationFlow
-    if($dados['messages']['finishedAutomationFlow'] != NULL){ 
+    if(isset($dados['messages']['finishedAutomationFlow'])){//$dados['messages']['finishedAutomationFlow'] != NULL){ 
         for ($i=0;$i<count($dados['messages']['finishedAutomationFlow']);$i++){
             $chatID = intval($dados['messages']['finishedAutomationFlow'][$i]['chatID']);
             $flowID = intval($dados['messages']['finishedAutomationFlow'][$i]['flowID']);
             $flowToken = $dados['messages']['finishedAutomationFlow'][$i]['flowToken'];
             $context = "SYSTEM.TIME_HELLO:" . $dados['messages']['finishedAutomationFlow'][$i]['context']['SYSTEM.TIME_HELLO'] . ", ";
             $context .= "SYSTEM.CHAT_ID:" . $dados['messages']['finishedAutomationFlow'][$i]['context']['SYSTEM.CHAT_ID'] . ", ";
-            $context .= "SYSTEM.CHAT_CREATED_DATE:" . date('Y-m-d H-i-s',$dados['messages']['finishedAutomationFlow'][$i]['context']['SYSTEM.CHAT_CREATED_DATE']) . ", ";
+            $context .= "SYSTEM.CHAT_CREATED_DATE:" . date('Y-m-d H:i:s', strtotime($dados['messages']['finishedAutomationFlow'][$i]['context']['SYSTEM.CHAT_CREATED_DATE'])) . ", ";
             $context .= "SYSTEM.DEPARTMENT_NAME:" . $dados['messages']['finishedAutomationFlow'][$i]['context']['SYSTEM.DEPARTMENT_NAME'] . ", ";
             $context .= "SYSTEM.DEPARTMENT_ORDER:" . $dados['messages']['finishedAutomationFlow'][$i]['context']['SYSTEM.DEPARTMENT_ORDER'] . ", ";
             $context .= "SYSTEM.CLIENT_NAME:" . $dados['messages']['finishedAutomationFlow'][$i]['context']['SYSTEM.CLIENT_NAME'] . ", ";
@@ -455,12 +469,12 @@
         }
     } 
     // Tratando o evento quando possui o closedChat
-    if($dados['messages']['closedChat'] != NULL){ 
+    if(isset($dados['messages']['closedChat'])){ //$dados['messages']['closedChat'] != NULL){ 
         for ($i=0;$i<count($dados['messages']['closedChat']);$i++){
             $chatID = intval($dados['messages']['closedChat'][$i]['id']);
             $channel = utf8_decode($dados['messages']['closedChat'][$i]['channel']);
             $situation = utf8_decode($dados['messages']['closedChat'][$i]['situation']);
-            $tabulation = utf8_decode($dados['messages']['closedChat'][$i]['tabulation']);
+            $tabulation = json_encode($dados['messages']['closedChat'][$i]['tabulation']);
             $closed = intval($dados['messages']['closedChat'][$i]['closed']);
             $closed_at = date("Y-m-d H:i:s", strtotime($dados['messages']['closedChat'][$i]['closed_at']));
             $company = intval($dados['messages']['closedChat'][$i]['company']['id']);
@@ -485,6 +499,5 @@
             }
         }
     }
-
 
 ?>

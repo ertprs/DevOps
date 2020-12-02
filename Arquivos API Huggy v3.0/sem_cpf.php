@@ -27,16 +27,18 @@
         $horarioContato = '';
         $saida = 0;
 
+        $url = "chats/$chatId/messages";
         $parametros = array(                                                                // Mensagem de SAUDAÇÃO
             "text"=> "Para você que ainda não é nosso cliente, seja bem vindo!",
             "isInternal"=> false
         ); 
+        $type = "POST";  
         enviaMensagemHuggy($url,$parametros,$type);
         sleep(5);
 
         $validaHorario = verificaHorarioComercial();                                        // Recebendo o horário disponivel do Sistema de Atendimento
 
-        if ($validaHorario) {                                                               // Verificando se está dentro do horário de Atendimento
+        if (!$validaHorario) {                                                               // Verificando se está dentro do horário de Atendimento
             $parametros = array(
                 "text"=> "Aguarde um momento, por favor! Você será transferido a um de nossos Atendentes.",
                 "isInternal"=> false
@@ -54,8 +56,8 @@
             sleep(5);
 
             $parametros = array(                                                            // Mensagem de PROMOÇÃO
-                "text"=> "Estamos com uma promoção em nossos seviços, confira na imagem a seguir.",
-                "file"=> "https://endereço_da_imagem/imagem.jpg",
+                "text"=> "Estamos com uma promoção em nossos seviços, confira na imagem.",
+                "file"=> "http://179.108.192.150/img/DevOps.png",
                 "isInternal"=> false
             ); 
             enviaMensagemHuggy($url,$parametros,$type);
@@ -89,23 +91,23 @@
             // Inicio do Loop com 100x e tempo de espara 2s para poder coletar
             for ($i=0; $i<10; $i++) {
                 // Busca na tabela a ultima informação enviada pelo cliente com a opção desejada
-                $BuscaPostagem = "SELECT body,dataCriacao FROM receivedAllMessage WHERE chatID = $chatId AND dataCriacao > $dataCriacao ORDER BY dataCriacao DESC LIMIT 1";
+                $BuscaPostagem = "SELECT * FROM receivedAllMessage WHERE chatID = $chatId AND dataCriacao > $dataCriacao ORDER BY dataCriacao DESC LIMIT 1";
                 $Resultado2 = mysqli_query($CONEXAO,$BuscaPostagem);
                 // Impressão de erros na conexão com o DB
                 if(!$Resultado2){ echo "Falha de conexao na busca pelo nome: " . mysqli_error($CONEXAO); }
                 else{ //echo "Conexao foi realizada com sucesso!";
                 }
 
-                $Aux = mysqli_fetch_array($Resultado2);
+                $Aux = mysqli_fetch_array($Resultado2);print_r($Aux);
                 $body = $Aux['body'];
                 $bodyTam = strlen($Aux['body']);
                 $dataCriacao = $Aux['dataCriacao'];
-                $dataCriacao = strtotime($dataCriacao);
+                $dataCriacao = strtotime($dataCriacao); 
                 $escolha = 0;
 
                 if ($bodyTam > 1) {                                                         // Verificando se body possui mais de uma letra
                     $nome = $body;                                                          // Atribindo valor na varaivel nome
-                    
+                   
                     $parametros = array(
                         "text"=> "Digite o número do TELEFONE para contato.\nEx.:(99)9999-9999",
                         "isInternal"=> false
@@ -133,7 +135,7 @@
                 // Inicio do Loop com 100x e tempo de espara 2s para poder coletar
                 for ($i=0; $i<10; $i++) {
                     // Busca na tabela a ultima informação enviada pelo cliente com a opção desejada
-                    $BuscaPostagem = "SELECT body,dataCriacao FROM receivedAllMessage WHERE chatID = $chatId AND dataCriacao > $dataCriacao ORDER BY dataCriacao DESC LIMIT 1";
+                    $BuscaPostagem = "SELECT * FROM receivedAllMessage WHERE chatID = $chatId AND dataCriacao > $dataCriacao ORDER BY dataCriacao DESC LIMIT 1";
                     $Resultado2 = mysqli_query($CONEXAO,$BuscaPostagem);
                     // Impressão de erros na conexão com o DB
                     if(!$Resultado2){ echo "Falha de conexao na busca pelo numero: " . mysqli_error($CONEXAO); }
@@ -244,14 +246,24 @@
                                 enviaMensagemHuggy($url,$parametros,$type);
                                 sleep(5);
 
-                                $parametros = array(
-                                    "text"=> "",
-                                    "isInternal"=> false
-                                ); 
-                                enviaMensagemHuggy($url,$parametros,$type);
-                                sleep(5);
+                               // Código para encerrar o atendimento caso seja necessário. Se passar o $parametros1 vazio o encerramento será feito mas o cliente não saberá
+                                // Se passar conteudo no $parametros1 o cleinte saberá que foi encerrado.
+                                // Descomnetar caso deseje finalizar atendimento COM ou SEM mensagem para o cliente
+                                /*$url1 = "chats/$chatId/close";
+                                $parametros1 = "";                                                  // Paramentos para fechamento sem mensagem final
+                                $parametros1 = array(                                               // Parametros para fechamento com envio de mensagem final
+                                    "tabulation"=> "",
+                                    "comment"=> "",
+                                    "sendFeedback"=> true                                           // Mensagem de agradecimento deve estar configurada no painel do Huggy
+                                );
+                                $type1 = "PUT";
+                                enviaMensagemHuggy($url1,$parametros1,$type1);*/
                                 
-                                $saida = 1;                                                 // Finalizando o Atendimento
+                                echo "Nome:" . $nome . "\n";
+                                echo "Telefone:" . $telefone . "\n";
+                                echo "Cidade:" . $cidadeEstado . "\n";
+                                echo "Horário:" . $horarioContato . "\n";
+                                $saida = 0;                                                 // Finalizando o Atendimento
                                 $i = 10;                                                    // Finalizando o loop
                             } else {                                                        // Trata quando o cliente digita o valor incorreto
                                 $parametros = array(
@@ -273,7 +285,7 @@
                 } else if ($escolha1 == 0)                                                  // Se o cliente não digitou nada ou digitou algum texto, será transferido
                      $saida = 1;                                                            // Finalizando o Atendimento
 
-            } else if ($escolha == 0) {                                                     // Se o cliente não digitou nada ou digitou algum texto, será transferido
+            } else if ($escolha == 0)                                                       // Se o cliente não digitou nada ou digitou algum texto, será transferido
                 $saida = 1;                                                                 // Finalizando o Atendimento
 
         } else if ($cliente == 0){                                                          // Se o cliente não digitou nada ou digitou algum texto, será transferido
@@ -289,6 +301,7 @@
             $parametros1 = "";
             $type1 = "PUT";
             /*enviaMensagemHuggy($url1,$parametros1,$type1);*/
+            echo "Tranferiu!";
         }
     
         if ($saida == 1){                                                                   // Cliente não digitou nenhuma informação durante o fluxo
