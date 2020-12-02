@@ -85,12 +85,12 @@
             }
 
             // Salvando dados no DB na tabela "dados"
-            /*$Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','createdCustomer','$customerID','-','-1','-1','$channelName','$customerID','-1','$send_at','$read_at','$closed_at','$company','-1','$name','-','$token','$messages')";
+            $Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','createdCustomer','$customerID','-','-1','-1','$channelName','$customerID','-1','$send_at','$read_at','$closed_at','$company','-1','$name','-','$token','$messages')";
             $Resultado = mysqli_query($CONEXAO,$Insere_dado);        
             // Impressão de erros na conexão com o DB
             if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
             else{ //echo "Conexao foi realizada com sucesso!";
-            }*/
+            }
         }
     } 
     // Tratando o evento quando possui o createdChat
@@ -123,12 +123,12 @@
             }
             
             // Salvando dados no DB na tabela "dados"
-            /*$Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','createdChat','$chatID','-','-1','-1','$channel','$customerID','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','$department','$token','$messages')";
+            $Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','createdChat','$chatID','-','-1','-1','$channel','$customerID','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','$department','$token','$messages')";
             $Resultado = mysqli_query($CONEXAO,$Insere_dado);        
             // Impressão de erros na conexão com o DB
             if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
             else{ //echo "Conexao foi realizada com sucesso!";
-            }*/
+            }
         }
     }
     // Tratando o evento quando possui o agentEntered
@@ -167,12 +167,12 @@
             }
             
             // Salvando dados no DB na tabela "dados"
-            /*$Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','agentEntered','$chatID','-','-1','-1','$channel','$customerID','$chatID','$send_at','$read_at','$closed_at','$company','$agentID','-','$department','$token','$messages')";
+            $Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','agentEntered','$chatID','-','-1','-1','$channel','$customerID','$chatID','$send_at','$read_at','$closed_at','$company','$agentID','-','$department','$token','$messages')";
             $Resultado = mysqli_query($CONEXAO,$Insere_dado);        
             // Impressão de erros na conexão com o DB
             if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
             else{ //echo "Conexao foi realizada com sucesso!";
-            }*/
+            }
         }
     }
     // Tratando o evento quando possui o updatedCustomer
@@ -200,12 +200,12 @@
             }            
             
             // Salvando dados no DB na tabela "dados"
-            /*$Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','updatedCustomer','$customerID','-','-1','-1','-','$customerID','-1','$send_at','$read_at','$closed_at','$company','-1','$name','-','$token','$messages')";
+            $Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','updatedCustomer','$customerID','-','-1','-1','-','$customerID','-1','$send_at','$read_at','$closed_at','$company','-1','$name','-','$token','$messages')";
             $Resultado = mysqli_query($CONEXAO,$Insere_dado);        
             // Impressão de erros na conexão com o DB
             if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
             else{ //echo "Conexao foi realizada com sucesso!";
-            }*/
+            }
         }
     } 
     // Tratando o evento quando possui o startedWidgetAttendance
@@ -234,12 +234,12 @@
             }
             
             // Salvando dados no DB na tabela "dados"
-            /*$Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','startedWidgetAttendance','$startedID','-','-1','-1','$channelName','-1','-1','$send_at','$read_at','$closed_at','$company','-1','$name','-','$token','$messages')";
+            $Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','startedWidgetAttendance','$startedID','-','-1','-1','$channelName','-1','-1','$send_at','$read_at','$closed_at','$company','-1','$name','-','$token','$messages')";
             $Resultado = mysqli_query($CONEXAO,$Insere_dado);        
             // Impressão de erros na conexão com o DB
             if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
             else{ //echo "Conexao foi realizada com sucesso!";
-            }*/
+            }
         }
     } 
     // Tratando o evento quando possui o receivedAllMessage
@@ -296,12 +296,12 @@
             }
             
             // Salvando dados no DB na tabela "dados"
-            /*$Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','receivedAllMessage','$receivedID','$body','$senderID','$receiverID','$channel','$customerID','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','-','$token','$messages')";
+            $Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','receivedAllMessage','$receivedID','$body','$senderID','$receiverID','$channel','$customerID','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','-','$token','$messages')";
             $Resultado = mysqli_query($CONEXAO,$Insere_dado);        
             // Impressão de erros na conexão com o DB
             if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
             else{ //echo "Conexao foi realizada com sucesso!";
-            }*/
+            }
         }
     } 
     // Tratando o evento quando possui o sentAllMessage
@@ -358,12 +358,12 @@
             }
             
             // Salvando dados no DB na tabela "dados"
-            /*$Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','sentAllMessage','$sentID','$body','$senderID','$receiverID','$channel','$customerID','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','-','$token','$messages')";
+            $Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','sentAllMessage','$sentID','$body','$senderID','$receiverID','$channel','$customerID','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','-','$token','$messages')";
             $Resultado = mysqli_query($CONEXAO,$Insere_dado);        
             // Impressão de erros na conexão com o DB
             if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
             else{ //echo "Conexao foi realizada com sucesso!";
-            }*/
+            }
         }
     } 
     // Tratando o evento quando possui o startedAutomationFlow
@@ -409,12 +409,12 @@
             }
             
             // Salvando dados no DB na tabela "dados"
-            /*$Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','startedAutomationFlow','$chatID','$context','-1','-1','-','-1','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','-','$token','$messages')";
+            $Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','startedAutomationFlow','$chatID','$context','-1','-1','-','-1','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','-','$token','$messages')";
             $Resultado = mysqli_query($CONEXAO,$Insere_dado);        
             // Impressão de erros na conexão com o DB
             if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
             else{ //echo "Conexao foi realizada com sucesso!";
-            }*/
+            }
         }
     } 
     // Tratando o evento quando possui o finishedAutomationFlow
@@ -460,12 +460,12 @@
             }
             
             // Salvando dados no DB na tabela "dados"
-            /*$Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','finishedAutomationFlow','$chatID','$context','-1','-1','-','-1','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','-','$token','$messages')";
+            $Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','finishedAutomationFlow','$chatID','$context','-1','-1','-','-1','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','-','$token','$messages')";
             $Resultado = mysqli_query($CONEXAO,$Insere_dado);        
             // Impressão de erros na conexão com o DB
             if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
             else{ //echo "Conexao foi realizada com sucesso!";
-            }*/
+            }
         }
     } 
     // Tratando o evento quando possui o closedChat
@@ -491,12 +491,12 @@
             }
             
             // Salvando dados no DB na tabela "dados"
-            /*$Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','closedChat','$chatID','-','-1','-1','$channel','-1','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','-','$token','$messages')";
+            $Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','closedChat','$chatID','-','-1','-1','$channel','-1','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','-','$token','$messages')";
             $Resultado = mysqli_query($CONEXAO,$Insere_dado);        
             // Impressão de erros na conexão com o DB
             if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
             else{ //echo "Conexao foi realizada com sucesso!";
-            }*/
+            }
         }
     }
 

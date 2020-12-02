@@ -280,7 +280,7 @@
             // Transfere cliente para fila de atendimento do Setor de Pagamentos
             // Passo 1 - Definir o departamento
             $url1 = "chats/$chatId/department";
-            $parametros1 = array( "department"=> "16182" );
+            $parametros1 = array( "department"=> "16182" );                                 // ID do setor Comercial/ Quero ter Conecta
             $type1 = "PUT";
             /*enviaMensagemHuggy($url1,$parametros1,$type1);*/
 
