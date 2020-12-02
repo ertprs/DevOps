@@ -89,19 +89,20 @@
 
         if ($cliente == 1) {                                                                // Verificação de quando o cliente está bloqeuado pelo Pagamentos
             // Inicio do Loop com 100x e tempo de espara 2s para poder coletar
+            echo date('Y m d H:i:s',$dataCriacao)."\n";
             for ($i=0; $i<10; $i++) {
                 // Busca na tabela a ultima informação enviada pelo cliente com a opção desejada
-                $BuscaPostagem = "SELECT * FROM receivedAllMessage WHERE chatID = $chatId AND dataCriacao > $dataCriacao ORDER BY dataCriacao DESC LIMIT 1";
+                $BuscaPostagem = "SELECT body,dataCriacao FROM receivedAllMessage WHERE chatID = $chatId AND dataCriacao > $dataCriacao ORDER BY dataCriacao DESC LIMIT 1";
                 $Resultado2 = mysqli_query($CONEXAO,$BuscaPostagem);
                 // Impressão de erros na conexão com o DB
                 if(!$Resultado2){ echo "Falha de conexao na busca pelo nome: " . mysqli_error($CONEXAO); }
                 else{ //echo "Conexao foi realizada com sucesso!";
                 }
 
-                $Aux = mysqli_fetch_array($Resultado2);print_r($Aux);
+                $Aux = mysqli_fetch_array($Resultado2);
                 $body = $Aux['body'];
                 $bodyTam = strlen($Aux['body']);
-                $dataCriacao = $Aux['dataCriacao'];
+                $dataCriacao = $Aux['dataCriacao'];echo $dataCriacao."\n";
                 $dataCriacao = strtotime($dataCriacao); 
                 $escolha = 0;
 
@@ -133,9 +134,10 @@
 
             if ($escolha == 1) {
                 // Inicio do Loop com 100x e tempo de espara 2s para poder coletar
+                echo "----\n".date('Y m d H:i:s',$dataCriacao)."\n";
                 for ($i=0; $i<10; $i++) {
                     // Busca na tabela a ultima informação enviada pelo cliente com a opção desejada
-                    $BuscaPostagem = "SELECT * FROM receivedAllMessage WHERE chatID = $chatId AND dataCriacao > $dataCriacao ORDER BY dataCriacao DESC LIMIT 1";
+                    $BuscaPostagem = "SELECT body,dataCriacao FROM receivedAllMessage WHERE chatID = $chatId AND dataCriacao > $dataCriacao ORDER BY dataCriacao DESC LIMIT 1";
                     $Resultado2 = mysqli_query($CONEXAO,$BuscaPostagem);
                     // Impressão de erros na conexão com o DB
                     if(!$Resultado2){ echo "Falha de conexao na busca pelo numero: " . mysqli_error($CONEXAO); }
@@ -145,7 +147,7 @@
                     $Aux = mysqli_fetch_array($Resultado2);
                     $body = $Aux['body'];
                     $bodyTam = strlen($Aux['body']);
-                    $dataCriacao = $Aux['dataCriacao'];
+                    $dataCriacao = $Aux['dataCriacao'];echo $dataCriacao."\n";
                     $dataCriacao = strtotime($dataCriacao);
                     $escolha1 = 0;
 
@@ -177,6 +179,7 @@
 
                 if ($escolha1 == 1) {
                     // Inicio do Loop com 100x e tempo de espara 2s para poder coletar
+                    echo "----\n".date('Y m d H:i:s',$dataCriacao)."\n";
                     for ($i=0; $i<10; $i++) {
                         // Busca na tabela a ultima informação enviada pelo cliente com a opção desejada
                         $BuscaPostagem = "SELECT body,dataCriacao FROM receivedAllMessage WHERE chatID = $chatId AND dataCriacao > $dataCriacao ORDER BY dataCriacao DESC LIMIT 1";
@@ -189,7 +192,7 @@
                         $Aux = mysqli_fetch_array($Resultado2);
                         $body = $Aux['body'];
                         $bodyTam = strlen($Aux['body']);
-                        $dataCriacao = $Aux['dataCriacao'];
+                        $dataCriacao = $Aux['dataCriacao'];echo $dataCriacao."\n";
                         $dataCriacao = strtotime($dataCriacao);
                         $escolha2 = 0;
     
@@ -221,6 +224,7 @@
                     
                     if ($escolha2 == 1) {
                         // Inicio do Loop com 100x e tempo de espara 2s para poder coletar
+                        echo "----\n".date('Y m d H:i:s',$dataCriacao)."\n";
                         for ($i=0; $i<10; $i++) {
                             // Busca na tabela a ultima informação enviada pelo cliente com a opção desejada
                             $BuscaPostagem = "SELECT body,dataCriacao FROM receivedAllMessage WHERE chatID = $chatId AND dataCriacao > $dataCriacao ORDER BY dataCriacao DESC LIMIT 1";
@@ -233,7 +237,7 @@
                             $Aux = mysqli_fetch_array($Resultado2);
                             $body = $Aux['body'];
                             $bodyTam = strlen($Aux['body']);
-                            $dataCriacao = $Aux['dataCriacao'];
+                            $dataCriacao = $Aux['dataCriacao'];echo $dataCriacao."\n";
                             $dataCriacao = strtotime($dataCriacao);
         
                             if ($bodyTam >= 2) {                                            // Verificando se body não é um número

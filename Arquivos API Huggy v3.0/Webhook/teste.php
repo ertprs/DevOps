@@ -242,68 +242,6 @@
             }
         }
     } 
-    // Tratando o evento quando possui o receivedAllMessage
-    if(isset($dados['messages']['receivedAllMessage'])){ //$dados['messages']['receivedAllMessage'] != NULL){
-        for ($i=0;$i<count($dados['messages']['receivedAllMessage']);$i++){
-            $receivedID = intval($dados['messages']['receivedAllMessage'][$i]['id']);
-            $body = utf8_decode($dados['messages']['receivedAllMessage'][$i]['body']);
-            $is_internal = $dados['messages']['receivedAllMessage'][$i]['is_internal'];
-            $is_email = $dados['messages']['receivedAllMessage'][$i]['is_email'];
-            $senderID = intval($dados['messages']['receivedAllMessage'][$i]['sender']['id']);
-            $sender = "name: " . $dados['messages']['receivedAllMessage'][$i]['sender']['name'] . ", ";
-            $sender .= "mobile: " . $dados['messages']['receivedAllMessage'][$i]['sender']['mobile'] . ", ";
-            $sender .= "phone: " . $dados['messages']['receivedAllMessage'][$i]['sender']['phone'] . ", ";
-            $sender .= "email: " . $dados['messages']['receivedAllMessage'][$i]['sender']['email'];
-            $sender = utf8_decode($sender);
-            $senderType = utf8_decode($dados['messages']['receivedAllMessage'][$i]['senderType']);
-            $receiverID = intval($dados['messages']['receivedAllMessage'][$i]['receiver']['id']);
-            $receiver = "name: " . $dados['messages']['receivedAllMessage'][$i]['receiver']['name'] . ", ";
-            $receiver .= "mobile: " . $dados['messages']['receivedAllMessage'][$i]['receiver']['mobile'] . ", ";
-            $receiver .= "phone: " . $dados['messages']['receivedAllMessage'][$i]['receiver']['phone'] . ", ";
-            $receiver .= "email: " . $dados['messages']['receivedAllMessage'][$i]['receiver']['email'];
-            $receiver = utf8_decode($receiver);
-            $receiverType = utf8_decode($dados['messages']['receivedAllMessage'][$i]['receiverType']);
-            $file = utf8_decode($dados['messages']['receivedAllMessage'][$i]['file']);
-            $channel = utf8_decode($dados['messages']['receivedAllMessage'][$i]['channel']);
-            $customerID = intval($dados['messages']['receivedAllMessage'][$i]['customer']['id']);
-            $customer = "name: " . $dados['messages']['receivedAllMessage'][$i]['customer']['name'] . ", ";
-            $customer .= "mobile: " . $dados['messages']['receivedAllMessage'][$i]['customer']['mobile'] . ", ";
-            $customer .= "phone: " . $dados['messages']['receivedAllMessage'][$i]['customer']['phone'] . ", ";
-            $customer .= "email: " . $dados['messages']['receivedAllMessage'][$i]['customer']['email'];
-            $customer = utf8_decode($customer);
-            $chatID = intval($dados['messages']['receivedAllMessage'][$i]['chat']['id']);
-            $chat = "channel: " . $dados['messages']['receivedAllMessage'][$i]['chat']['channel'] . ", ";
-            $chat .= "situation: " . $dados['messages']['receivedAllMessage'][$i]['chat']['situation'] . ", ";
-            $chat .= "department: " . $dados['messages']['receivedAllMessage'][$i]['chat']['department'] . ", ";
-            $chat .= "customer[id]: " . $dados['messages']['receivedAllMessage'][$i]['chat']['customer']['id'];
-            $chat = utf8_decode($chat);
-            $send_at = date("Y-m-d H:i:s", strtotime($dados['messages']['receivedAllMessage'][$i]['send_at']));
-            if($dados['messages']['receivedAllMessage'][$i]['read_at'] == ""){
-                $read_at = date("Y-m-d H:i:s", strtotime("0001-01-01 00:00:00"));
-            } else 
-                $read_at = date("Y-m-d H:i:s", strtotime($dados['messages']['receivedAllMessage'][$i]['read_at']));
-                        
-            $company = intval($dados['messages']['receivedAllMessage'][$i]['company']['id']);
-            // Variavel default
-            $closed_at = date("Y-m-d H:i:s", strtotime("0001-01-01 00:00:00"));
-
-            // Inserindo dados na tabela receivedAllMessage
-            $Insere = "INSERT INTO receivedAllMessage(dataCriacao,receivedID,body,is_internal,is_email,senderID,sender,senderType,receiverID,receiver,receiverType,file,channel,customerID,customer,chatID,chat,send_at,read_at,companyID) VALUES ('$dataCriacao','$receivedID','$body','$is_internal','$is_email','$senderID','$sender','$senderType','$receiverID','$receiver','$receiverType','$file','$channel','$customerID','$customer','$chatID','$chat','$send_at','$read_at','$company')";
-            $Resultado = mysqli_query($CONEXAO,$Insere);   
-            // Impressão de erros na conexão com o DB
-            if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO);}
-            else{//echo "Conexao foi realizada com sucesso!";
-            }
-            
-            // Salvando dados no DB na tabela "dados"
-            $Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','receivedAllMessage','$receivedID','$body','$senderID','$receiverID','$channel','$customerID','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','-','$token','$messages')";
-            $Resultado = mysqli_query($CONEXAO,$Insere_dado);        
-            // Impressão de erros na conexão com o DB
-            if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
-            else{ //echo "Conexao foi realizada com sucesso!";
-            }
-        }
-    } 
     // Tratando o evento quando possui o sentAllMessage
     if(isset($dados['messages']['sentAllMessage'])){ //$dados['messages']['sentAllMessage'] != NULL){ 
         for ($i=0;$i<count($dados['messages']['sentAllMessage']);$i++){
@@ -364,6 +302,87 @@
             if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
             else{ //echo "Conexao foi realizada com sucesso!";
             }
+        }
+    } 
+    // Tratando o evento quando possui o receivedAllMessage
+    if(isset($dados['messages']['receivedAllMessage'])){ //$dados['messages']['receivedAllMessage'] != NULL){
+        $flag = ''; // Variavel para verificação de item já inserido ou não para eliminar informações repetidas
+        for ($i=0;$i<count($dados['messages']['receivedAllMessage']);$i++){
+            if(isset($dados['messages']['sentAllMessage'])){
+                for ($j=0;$j<count($dados['messages']['sentAllMessage']);$j++){
+                    $receivedID = intval($dados['messages']['receivedAllMessage'][$i]['id']);
+                    $sentID = intval($dados['messages']['sentAllMessage'][$j]['id']);
+                    if ($receivedID == $sentID) {   // Verifica se já doi inserido o item como sentAllMensage, se foi inserido não insere novamente
+                        $flag = 0;  
+                        $j = count($dados['messages']['sentAllMessage']);
+                    } else                          // Senao isere um item que ainda não consta no banco
+                        $flag = 1;
+                }
+            } else 
+                $flag = 1;
+                
+            if ($flag == 1) {
+                $receivedID = intval($dados['messages']['receivedAllMessage'][$i]['id']);
+                $body = utf8_decode($dados['messages']['receivedAllMessage'][$i]['body']);
+                $is_internal = $dados['messages']['receivedAllMessage'][$i]['is_internal'];
+                $is_email = $dados['messages']['receivedAllMessage'][$i]['is_email'];
+                $senderID = intval($dados['messages']['receivedAllMessage'][$i]['sender']['id']);
+                $sender = "name: " . $dados['messages']['receivedAllMessage'][$i]['sender']['name'] . ", ";
+                $sender .= "mobile: " . $dados['messages']['receivedAllMessage'][$i]['sender']['mobile'] . ", ";
+                $sender .= "phone: " . $dados['messages']['receivedAllMessage'][$i]['sender']['phone'] . ", ";
+                $sender .= "email: " . $dados['messages']['receivedAllMessage'][$i]['sender']['email'];
+                $sender = utf8_decode($sender);
+                $senderType = utf8_decode($dados['messages']['receivedAllMessage'][$i]['senderType']);
+                $receiverID = intval($dados['messages']['receivedAllMessage'][$i]['receiver']['id']);
+                $receiver = "name: " . $dados['messages']['receivedAllMessage'][$i]['receiver']['name'] . ", ";
+                $receiver .= "mobile: " . $dados['messages']['receivedAllMessage'][$i]['receiver']['mobile'] . ", ";
+                $receiver .= "phone: " . $dados['messages']['receivedAllMessage'][$i]['receiver']['phone'] . ", ";
+                $receiver .= "email: " . $dados['messages']['receivedAllMessage'][$i]['receiver']['email'];
+                $receiver = utf8_decode($receiver);
+                $receiverType = utf8_decode($dados['messages']['receivedAllMessage'][$i]['receiverType']);
+                $file = utf8_decode($dados['messages']['receivedAllMessage'][$i]['file']);
+                $channel = utf8_decode($dados['messages']['receivedAllMessage'][$i]['channel']);
+                $customerID = intval($dados['messages']['receivedAllMessage'][$i]['customer']['id']);
+                $customer = "name: " . $dados['messages']['receivedAllMessage'][$i]['customer']['name'] . ", ";
+                $customer .= "mobile: " . $dados['messages']['receivedAllMessage'][$i]['customer']['mobile'] . ", ";
+                $customer .= "phone: " . $dados['messages']['receivedAllMessage'][$i]['customer']['phone'] . ", ";
+                $customer .= "email: " . $dados['messages']['receivedAllMessage'][$i]['customer']['email'];
+                $customer = utf8_decode($customer);
+                $chatID = intval($dados['messages']['receivedAllMessage'][$i]['chat']['id']);
+                $chat = "channel: " . $dados['messages']['receivedAllMessage'][$i]['chat']['channel'] . ", ";
+                $chat .= "situation: " . $dados['messages']['receivedAllMessage'][$i]['chat']['situation'] . ", ";
+                $chat .= "department: " . $dados['messages']['receivedAllMessage'][$i]['chat']['department'] . ", ";
+                $chat .= "customer[id]: " . $dados['messages']['receivedAllMessage'][$i]['chat']['customer']['id'];
+                $chat = utf8_decode($chat);
+                $send_at = date("Y-m-d H:i:s", strtotime($dados['messages']['receivedAllMessage'][$i]['send_at']));
+                if($dados['messages']['receivedAllMessage'][$i]['read_at'] == ""){
+                    $read_at = date("Y-m-d H:i:s", strtotime("0001-01-01 00:00:00"));
+                } else 
+                    $read_at = date("Y-m-d H:i:s", strtotime($dados['messages']['receivedAllMessage'][$i]['read_at']));
+                            
+                $company = intval($dados['messages']['receivedAllMessage'][$i]['company']['id']);
+                // Variavel default
+                $closed_at = date("Y-m-d H:i:s", strtotime("0001-01-01 00:00:00"));
+
+                // Inserindo dados na tabela receivedAllMessage
+                $Insere = "INSERT INTO receivedAllMessage(dataCriacao,receivedID,body,is_internal,is_email,senderID,sender,senderType,receiverID,receiver,receiverType,file,channel,customerID,customer,chatID,chat,send_at,read_at,companyID) VALUES ('$dataCriacao','$receivedID','$body','$is_internal','$is_email','$senderID','$sender','$senderType','$receiverID','$receiver','$receiverType','$file','$channel','$customerID','$customer','$chatID','$chat','$send_at','$read_at','$company')";
+                $Resultado = mysqli_query($CONEXAO,$Insere);   
+                // Impressão de erros na conexão com o DB
+                if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO);}
+                else{//echo "Conexao foi realizada com sucesso!";
+                }
+                
+                // Salvando dados no DB na tabela "dados"
+                $Insere_dado = "INSERT INTO dados(data,tipoEvento,tipoEventoID,body,senderID,receiverID,channel,customerID,chatID,send_at,read_at,closed_at,companyID,agentID,name,department,token,total) VALUES ('$dataCriacao','receivedAllMessage','$receivedID','$body','$senderID','$receiverID','$channel','$customerID','$chatID','$send_at','$read_at','$closed_at','$company','-1','-','-','$token','$messages')";
+                $Resultado = mysqli_query($CONEXAO,$Insere_dado);        
+                // Impressão de erros na conexão com o DB
+                if(!$Resultado){ echo "Falha de conexao: " . mysqli_error($CONEXAO); }
+                else{ //echo "Conexao foi realizada com sucesso!";
+                }
+                
+            }       
+            
+            $flag = 0;
         }
     } 
     // Tratando o evento quando possui o startedAutomationFlow
