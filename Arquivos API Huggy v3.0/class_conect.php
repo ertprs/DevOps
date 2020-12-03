@@ -129,7 +129,7 @@ class ApiHuggyConection {
 				$this->_tokenEmCache = $this->obterToken(false);			// Chamado a função para obter uma nova Token para conexão na API
 				return $this->_tokenEmCache = (object) array(				// Retorno do objeto com a token
 					'token' => $this->_tokenEmCache->access_token,
-					'cache' => true
+					'cache' => false
 				);
 			}
 		} else {
@@ -176,10 +176,7 @@ class ApiHuggyConection {
 						$this->_erro = "Não foi possível abrir o arquivo para salvar a Token em cache! ";
 
 					fclose($arquivo);										// Fecha o arquivo
-					return $this->_tokenEmCache = (object) array(			// Retorno do objeto com a token
-						'token' => $resultado->access_token,
-						'cache' => true
-					);
+					return $resultado;
 				} else 
 					$this->_erro = $resultado->message;
 			} else

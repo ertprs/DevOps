@@ -82,7 +82,7 @@
                 "isInternal"=> false
             ); 
             enviaMensagemHuggy($url,$parametros,$type);
-            sleep(5);
+            sleep(30);
 
             $cliente = 1;                                                                   // Transferindo loop para finalizar atendimento
         }
@@ -114,7 +114,7 @@
                         "isInternal"=> false
                     ); 
                     enviaMensagemHuggy($url,$parametros,$type);
-                    sleep(5);
+                    sleep(30);
                     
                     $escolha = 1;
                     $i = 10;                                                                // Finalizando o loop
@@ -159,7 +159,7 @@
                             "isInternal"=> false
                         ); 
                         enviaMensagemHuggy($url,$parametros,$type);
-                        sleep(5);
+                        sleep(30);
                         
                         $escolha1 = 1;
                         $i = 10;                                                            // Finalizando o loop
@@ -204,7 +204,7 @@
                                 "isInternal"=> false
                             ); 
                             enviaMensagemHuggy($url,$parametros,$type);
-                            sleep(5);
+                            sleep(30);
                             
                             $escolha2 = 1;
                             $i = 10;                                                        // Finalizando o loop
