@@ -21,4 +21,4 @@ Breve descrição
 
 
 
->>  Obs.: Se você teve acesso a esse conteúdo e o qual não foi detinado diretamente à você, desconsidere e não o utilize pois o mesmo contém informações retritas do proprietário. 
+>>  Obs.: Se você teve acesso a esse conteúdo e o qual não foi detinado diretamente à você, desconsidere e não o utilize pois o mesmo contém informações retritas do proprietário.
