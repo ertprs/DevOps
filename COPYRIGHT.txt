@@ -1,0 +1,14 @@
+// +-----------------------------------------------------------------------+
+// | Integrações de várias APIs                                            |
+// +-----------------------------------------------------------------------+
+// | Este documentos são de propriedade particular e NÃO sendo disponíveis |
+// | para redistribuição. Todos foram desenvolvidos de forma especifica a  |
+// | pedido de uma empresa do ramo de Provedor de Internet.                |
+// | Se este conteúdo chegou até você sem que seja o prórpio porprietário  |
+// | ter te enviado, não os utilize.                                       |
+// |                                                                       |
+// +-----------------------------------------------------------------------+
+//
+// +-----------------------------------------------------------------------+
+// | Equipe Setor DevOps: <devops@mgconecta.com.br>                        |
+// +-----------------------------------------------------------------------+
