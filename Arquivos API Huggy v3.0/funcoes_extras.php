@@ -381,5 +381,5 @@
         }
     }
     
-    verificaHorarioComercial();
+    //verificaHorarioComercial();
 ?>
