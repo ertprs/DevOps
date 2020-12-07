@@ -38,7 +38,7 @@
 
         $validaHorario = verificaHorarioComercial();                                        // Recebendo o horário disponivel do Sistema de Atendimento
 
-        if (!$validaHorario) {                                                               // Verificando se está dentro do horário de Atendimento
+        if ($validaHorario) {                                                               // Verificando se está dentro do horário de Atendimento
             $parametros = array(
                 "text"=> "Aguarde um momento, por favor! Você será transferido a um de nossos Atendentes.",
                 "isInternal"=> false
