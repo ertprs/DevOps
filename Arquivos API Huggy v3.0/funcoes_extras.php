@@ -85,6 +85,10 @@
         return $feriados;
     }
 
+    
+    /* Dias da Semana: 0 - Domingo | 1 -segunda | 2 - Terça | 3 - Quarta | 4 - Quinta | 5 - Sexta | 6 - Sábado */
+
+
     /** Função que verifica horário de funcionamento do Setor de Suporte técnico nos dias da semana
      * Segunda-feira à Sexta-feira de 07:00:00 às 22:00:00 | Sábados de 08:00:00 ás 20:00:00
      * Domingos e feriados Nacionais de 13:00:00 às 19:00:00
