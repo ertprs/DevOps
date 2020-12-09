@@ -1,6 +1,7 @@
 INFORMAÇÕES DE DESENVOLVIMENTO
 =============================
 
+- Desenvolvimento API Akna
 - Desenvolvimento API Huggy
 - Desenvolvimento API BB
 - Desenvolvimento API Zabbix
@@ -18,6 +19,8 @@ Breve descrição
     - Plataforma de monitoramento completa. Arquivos realizam busca de informações armazenadas no DB para serem trabalhadas no sistema interno
 - Node:
     - Teste iniciais de apredizagem do NODEjs. Iniciando estudo com a linguagem Javascript
+- Akna:
+    - Plataforma de envio de SMS através da API
 
 
 
