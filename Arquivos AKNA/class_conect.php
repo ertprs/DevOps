@@ -73,13 +73,11 @@ class AknaWebService
 		$this->_erro = false;
 		
 		// Montar envelope contendo a requisição do serviço
-		$requisicao = '<main> <func trans="01.22"> </func> </main>';
-
-		echo "Cabeçalho da Requisição\nURL: " . self::URL_BASE . "\nUser: " . $this->_User . "\nPass: " . md5($this->_Pass) . "\nClient: " . $this->_Client . "\nRemetente: " . $this->_Remetente;
+		$requisicao = '<?xml version="1.0" encoding="UTF-8"?><main> <func trans="01.22"> </func> </main>';
 
 		//Imprimindo as informações que serão enviadas por XML
-		//echo "Requisicao com os dados em XML: \n";
-		echo "\n\nRequisição: "; print_r($requisicao);
+		echo "Requisicao XML: ";
+		print_r($requisicao);
 		
 		$curl = self::_prepararCurl();															// Preparar requisição
 		curl_setopt_array($curl, array(
@@ -94,39 +92,45 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		echo "\n\nRetorno:\n\n";
-		var_dump($resposta);																	// Exibindo dados obtidos
+		echo "\nResposta: ";print_r($resposta);																		// Exibindo dados obtidos
 
-		/*if ($resposta) {
+		if ($resposta) {
 			$dom = new DOMDocument('1.0', 'UTF-8');												// Criar documento XML para percorrer os nós da resposta
-			// Verificar se o formato recebido é um XML válido. A expressão regular executada por "preg_replace" retira espaços vazios entre tags.
-			if (@$dom->loadXML(preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta))) {
-				// Realiza o "parse" da resposta a partir do primeiro nó no corpo do documento dentro do envelope
-				$resultado = array();
-				print_r($resultado);
-				self::_converterNosXMLEmArray($dom->documentElement->firstChild->firstChild, $resultado);
-			} else
-				$resultado = false;
+			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
+			$resposta = '<MAIN><FUNC TRANS="01.22" KEY="0ba001ff3a2ddd98d333d161d78d"><RETURN ID="02">Permissão Negada</RETURN></FUNC></MAIN>';
+			echo "\n\n";//print_r($resposta);
+			$teste = simplexml_load_string($resposta);
+			$json = json_encode($teste);
+			$array = json_decode($json,true);
+			print_r($array);
+			//if ($teste) {
+			//	$resultado = array();echo "\npassou\n";
+				//self::_converterNosXMLEmArray($dom->documentElement->firstChild->firstChild, $resultado);
+			//	var_dump($resultado);
+			//} else
+			//	$resultado = false;
 		} else {
 			$this->_erro = 'Não foi possível conectar-se à Akna';
 			return false;
-		}*/
+		}
 		
 		// Se ocorreu o registro do boleto de forma correta, retorna o resultado com Sucesso
-		//if (is_array($resultado) && !array_key_exists('RETURN', $resultado) && !isset($resultado['RETURN'])){
-		//	$this->_erro = "Sucesso! ";
-		//	return $resultado;																	// Retorna o resultado com SUCESSO
-		//}
+		if (is_array($resultado) && !array_key_exists('RETURN', $resultado) && !isset($resultado['RETURN'])){
+			$this->_erro = "Sucesso! ";
+			return $resultado;																	// Retorna o resultado com SUCESSO
+			
+			var_dump($resultado);
+		}
 
 		//Imprime resposta recebida da Akna
-		//echo "\n\n------------------------- ERRO OCORRIDO ------------------------------\nResposta recebida da Akna com ERRO: \n";
+		echo "\n\n------------------------- ERRO OCORRIDO ------------------------------\nResposta recebida da Akna com ERRO: ";
 		//print_r($resultado);
 
 		// Se ocorreu erro no registro do boleto, retorna o resultado com o erro.
-		//if (is_array($resultado) || array_key_exists('RETURN', $resultado) || isset($resultado['RETURN'])) {
-		//	$this->_erro = is_array($resultado) ? @$resultado['RETURN'] ?: @$resultado['RETURN'] : 'Erro inesperado na resposta da Akna';
-		//	return $resultado;																	// Retorna o resultado com FALHS
-		//}
+		if (is_array($resultado) || array_key_exists('RETURN', $resultado) || isset($resultado['RETURN'])) {
+			$this->_erro = is_array($resultado) ? @$resultado['RETURN'] ?: @$resultado['RETURN'] : 'Erro inesperado na resposta da Akna';
+			return $resultado;																	// Retorna o resultado com FALHS
+		}
 		
 	}
 
@@ -152,8 +156,13 @@ class AknaWebService
 		$curl = self::_prepararCurl();															// Preparar requisição
 		curl_setopt_array($curl, array(
 			CURLOPT_URL => self::URL_BASE,
-			CURLOPT_POSTFIELDS => &$requisicao,
-			CURLOPT_HTTPHEADER => array('Content-Type: text/xml;charset=UTF-8')
+			CURLOPT_POSTFIELDS => array(
+				'User'=> $this->_User,
+				'Pass'=> md5($this->_Pass),
+				'XML'=> $requisicao,
+				'Client'=> $this->_Client,
+				'Remetente'=> $this->_Remetente
+				)
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
@@ -211,8 +220,13 @@ class AknaWebService
 		$curl = self::_prepararCurl();															// Preparar requisição
 		curl_setopt_array($curl, array(
 			CURLOPT_URL => self::URL_BASE,
-			CURLOPT_POSTFIELDS => &$requisicao,
-			CURLOPT_HTTPHEADER => array('Content-Type: text/xml;charset=UTF-8')
+			CURLOPT_POSTFIELDS => array(
+				'User'=> $this->_User,
+				'Pass'=> md5($this->_Pass),
+				'XML'=> $requisicao,
+				'Client'=> $this->_Client,
+				'Remetente'=> $this->_Remetente
+				)
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
@@ -270,8 +284,13 @@ class AknaWebService
 		$curl = self::_prepararCurl();															// Preparar requisição
 		curl_setopt_array($curl, array(
 			CURLOPT_URL => self::URL_BASE,
-			CURLOPT_POSTFIELDS => &$requisicao,
-			CURLOPT_HTTPHEADER => array('Content-Type: text/xml;charset=UTF-8')
+			CURLOPT_POSTFIELDS => array(
+				'User'=> $this->_User,
+				'Pass'=> md5($this->_Pass),
+				'XML'=> $requisicao,
+				'Client'=> $this->_Client,
+				'Remetente'=> $this->_Remetente
+				)
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
@@ -331,8 +350,13 @@ class AknaWebService
 		$curl = self::_prepararCurl();															// Preparar requisição
 		curl_setopt_array($curl, array(
 			CURLOPT_URL => self::URL_BASE,
-			CURLOPT_POSTFIELDS => &$requisicao,
-			CURLOPT_HTTPHEADER => array('Content-Type: text/xml;charset=UTF-8')
+			CURLOPT_POSTFIELDS => array(
+				'User'=> $this->_User,
+				'Pass'=> md5($this->_Pass),
+				'XML'=> $requisicao,
+				'Client'=> $this->_Client,
+				'Remetente'=> $this->_Remetente
+				)
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
