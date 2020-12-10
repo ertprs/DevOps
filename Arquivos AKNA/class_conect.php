@@ -5,7 +5,7 @@
 class AknaWebService 
 {
 	// Url necessária para a comunicação
-	const URL_BASE = 'https://app.akna.com.br/emkt/int/integracao.php';
+	const URL_BASE = 'http://app.akna.com.br/emkt/int/integracao.php';
 
 	private $_User;																				// Usuário de integração
 	private $_Pass;																				// Senha de integração
@@ -39,11 +39,14 @@ class AknaWebService
 		curl_setopt_array($curl, array(
 			CURLOPT_BINARYTRANSFER => true,
 			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_TIMEOUT => 0,
 			CURLOPT_SSL_VERIFYPEER => false,
 			CURLOPT_SSL_VERIFYHOST => 0,
 			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 			CURLOPT_POST => true,
-			CURLOPT_MAXREDIRS => 3
+			CURLOPT_MAXREDIRS => 10
 		));
 		return $curl;
 	}
@@ -70,29 +73,31 @@ class AknaWebService
 		$this->_erro = false;
 		
 		// Montar envelope contendo a requisição do serviço
-		$requisicao = '<?xml version="1.0" encoding="UTF-8"?><main><func trans="1.22"></func></main>';
+		$requisicao = '<main> <func trans="01.22"> </func> </main>';
+
+		echo "Cabeçalho da Requisição\nURL: " . self::URL_BASE . "\nUser: " . $this->_User . "\nPass: " . md5($this->_Pass) . "\nClient: " . $this->_Client . "\nRemetente: " . $this->_Remetente;
 
 		//Imprimindo as informações que serão enviadas por XML
 		//echo "Requisicao com os dados em XML: \n";
-		//print_r($requisicao);
-
+		echo "\n\nRequisição: "; print_r($requisicao);
+		
 		$curl = self::_prepararCurl();															// Preparar requisição
 		curl_setopt_array($curl, array(
 			CURLOPT_URL => self::URL_BASE,
-			CURLOPT_POSTFIELDS => &$requisicao,
-			CURLOPT_HTTPHEADER => array(
-				'Content-Type: text/xml;charset=UTF-8',
-				'User:'=> $this->_User,
-				'Pass:'=> $this->_Pass,
-				'Client:'=> $this->_Client,
-				'Remetente:'=> $this->_Remetente
+			CURLOPT_POSTFIELDS => array(
+				'User'=> $this->_User,
+				'Pass'=> md5($this->_Pass),
+				'XML'=> $requisicao,
+				'Client'=> $this->_Client,
+				'Remetente'=> $this->_Remetente
 				)
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
+		echo "\n\nRetorno:\n\n";
 		var_dump($resposta);																	// Exibindo dados obtidos
 
-		if ($resposta) {
+		/*if ($resposta) {
 			$dom = new DOMDocument('1.0', 'UTF-8');												// Criar documento XML para percorrer os nós da resposta
 			// Verificar se o formato recebido é um XML válido. A expressão regular executada por "preg_replace" retira espaços vazios entre tags.
 			if (@$dom->loadXML(preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta))) {
@@ -105,13 +110,13 @@ class AknaWebService
 		} else {
 			$this->_erro = 'Não foi possível conectar-se à Akna';
 			return false;
-		}
+		}*/
 		
 		// Se ocorreu o registro do boleto de forma correta, retorna o resultado com Sucesso
-		if (is_array($resultado) && !array_key_exists('RETURN', $resultado) && !isset($resultado['RETURN'])){
-			$this->_erro = "Sucesso! ";
-			return $resultado;																	// Retorna o resultado com SUCESSO
-		}
+		//if (is_array($resultado) && !array_key_exists('RETURN', $resultado) && !isset($resultado['RETURN'])){
+		//	$this->_erro = "Sucesso! ";
+		//	return $resultado;																	// Retorna o resultado com SUCESSO
+		//}
 
 		//Imprime resposta recebida da Akna
 		//echo "\n\n------------------------- ERRO OCORRIDO ------------------------------\nResposta recebida da Akna com ERRO: \n";
