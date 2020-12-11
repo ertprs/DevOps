@@ -1,7 +1,5 @@
 <?php
 	
-	include __DIR__ . DIRECTORY_SEPARATOR . "conexao.php";										//Buscando arquivo de conexão com os DB que serão utilizados
-
 class AknaWebService 
 {
 	// Url necessária para a comunicação
@@ -51,20 +49,6 @@ class AknaWebService
 		return $curl;
 	}
 
-	/** Passa por todos os nós do XML e retorna no formato de array considerando apenas o valor do nó (nodeValue) e o nome do nó (nodeName sem namespace)
-	 * @param DOMNode $no Nó a ser percorrido pela função
-	 * @param Array &$resultado	Variável que deverá armazenar o resultado encontrado
-	 * @return array Transcrição do formato XML em array
-	 */
-	static private function _converterNosXMLEmArray($no, &$resultado)							// função recursiva para incremento dos nós da montagem do XML
-	{
-		if ($no->firstChild && $no->firstChild->nodeType == XML_ELEMENT_NODE)
-			foreach ($no->childNodes as $pos)
-				self::_converterNosXMLEmArray($pos, $resultado[$pos->localName]);
-		else
-			$resultado = html_entity_decode(trim($no->nodeValue));
-	}
-
 	/** Função que realiza a chamada e retorna o resultado da Akna no formato de XML.
 	 * @return array Transcrição da resposta da Akna em array
 	 */
@@ -73,14 +57,14 @@ class AknaWebService
 		$this->_erro = false;
 		
 		// Montar envelope contendo a requisição do serviço
-		$requisicao = '<?xml version="1.0" encoding="UTF-8"?><main> <func trans="01.22"> </func> </main>';
+		$requisicao = '<?xml version="1.0" encoding="UTF-8"?><main><emkt trans="15.50"></emkt></main>';
 
 		//Imprimindo as informações que serão enviadas por XML
-		echo "Requisicao XML: ";
-		print_r($requisicao);
+		//echo "Requisicao XML: ";
+		//print_r($requisicao);
 		
-		$curl = self::_prepararCurl();															// Preparar requisição
-		curl_setopt_array($curl, array(
+		$curl = self::_prepararCurl();															// Preparar requisição sem cabeçalho, todos os dados 
+		curl_setopt_array($curl, array(															// devem ser enviados via POSTFIELDS e a senha sempre em "MD5"
 			CURLOPT_URL => self::URL_BASE,
 			CURLOPT_POSTFIELDS => array(
 				'User'=> $this->_User,
@@ -92,49 +76,33 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		echo "\nResposta: ";print_r($resposta);																		// Exibindo dados obtidos
+		//print_r($resposta);																	// Exibindo dados obtidos
 
 		if ($resposta) {
-			$dom = new DOMDocument('1.0', 'UTF-8');												// Criar documento XML para percorrer os nós da resposta
 			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
-			$resposta = '<MAIN><FUNC TRANS="01.22" KEY="0ba001ff3a2ddd98d333d161d78d"><RETURN ID="02">Permissão Negada</RETURN></FUNC></MAIN>';
-			echo "\n\n";//print_r($resposta);
-			$teste = simplexml_load_string($resposta);
-			$json = json_encode($teste);
-			$array = json_decode($json,true);
-			print_r($array);
-			//if ($teste) {
-			//	$resultado = array();echo "\npassou\n";
-				//self::_converterNosXMLEmArray($dom->documentElement->firstChild->firstChild, $resultado);
-			//	var_dump($resultado);
-			//} else
-			//	$resultado = false;
+			$resposta = preg_replace('/(<\?(\w+)\s(\w+)="\d\.\d"\s(\w+)="(\w+)\-\d"\?>)*/', '', $resposta);
+			$resposta = "<Resultado>" . $resposta . "</Resultado>";								// Inserindo nó pai, caos ocorrea alguma repetição do nó MAIN
+			$xml = simplexml_load_string($resposta);											// Lendo a resposta
+			$resultado = json_encode($xml);														// Transformando em JSON o resultado
+			//$resultado = json_decode($resultado,true);										// Transformando em array o resultado
+			//print_r($resultado);
 		} else {
 			$this->_erro = 'Não foi possível conectar-se à Akna';
 			return false;
 		}
-		
-		// Se ocorreu o registro do boleto de forma correta, retorna o resultado com Sucesso
-		if (is_array($resultado) && !array_key_exists('RETURN', $resultado) && !isset($resultado['RETURN'])){
-			$this->_erro = "Sucesso! ";
-			return $resultado;																	// Retorna o resultado com SUCESSO
-			
-			var_dump($resultado);
-		}
 
-		//Imprime resposta recebida da Akna
-		echo "\n\n------------------------- ERRO OCORRIDO ------------------------------\nResposta recebida da Akna com ERRO: ";
-		//print_r($resultado);
+		$RequisicaoResultado = $requisicao . "¹" . $resultado;									// Unindo a Requisição e o resultado para serem retornados
+		$this->_erro = 'Conexão realizada com sucesso!';
 
-		// Se ocorreu erro no registro do boleto, retorna o resultado com o erro.
-		if (is_array($resultado) || array_key_exists('RETURN', $resultado) || isset($resultado['RETURN'])) {
-			$this->_erro = is_array($resultado) ? @$resultado['RETURN'] ?: @$resultado['RETURN'] : 'Erro inesperado na resposta da Akna';
-			return $resultado;																	// Retorna o resultado com FALHS
-		}
+		return $RequisicaoResultado;															// Retornado a requisição e o resultado
 		
 	}
 
-	/** Recebe um array contendo o telefone e a mensagem a ser enviada, realiza a chamada e retorna o resultado da Akna no formato de XML.
+	/** Função recebe um array com os parametros e realiza a conexão, é destinada para o envio de SMS para os contatos.
+	 * CAMPOS NÃO OBRIGATÓRIOS: "remetente" quando se tem somente um cadastrado e "identificador"
+	 * CAMPOS OBRIGATÓRIOS: "telefone" e "mensagem" que estão ambos dentro de <sms>...</sms> e também "encurtar url" deve ser sempre "S".
+	 * Obs.: Pode ser enviado mais de uma mensagem em uma única chamada da função basta passar por parametros os campos de 
+	 * <telefone>...</telefone><mensagem>...</mensagem>
 	 * @param array $parametros	Array com mapeamento nome -> valor
 	 * @return array Transcrição da resposta da Akna em array
 	 */
@@ -142,18 +110,18 @@ class AknaWebService
 	{
 		$this->_erro = false;
 		
-		// Montar envelope contendo a requisição do serviço
+		// Montando a requisição do serviço
 		$requisicao = '<?xml version="1.0" encoding="UTF-8"?><main><emkt trans="40.01"><remetente>Conecta</remetente><encurtar_url>S</encurtar_url>';
-		foreach ($parametros as $no => &$valor)
-			$requisicao .= "<$no>" . htmlspecialchars($valor) . "</$no>";
-			
+		for ($i=0;$i<count($parametros['sms']);$i++){
+			$requisicao .= "<sms><telefone>" . $parametros['sms'][$i]['telefone'] . "</telefone>";
+			$requisicao .= "<mensagem>" . $parametros['sms'][$i]['mensagem'] . "</mensagem></sms>";
+		}
 		$requisicao .= '</emkt></main>';														// Fecha o nó da requisição, o corpo da mensagem e o envelope
 
-		//Imprimindo as informações que serão enviadas por XML
-		echo "Requisicao com os dados em XML: \n";
+		echo "Requisicao com os dados em XML: \n";											//Imprimindo as informações que serão enviadas por XML
 		print_r($requisicao);
 
-		$curl = self::_prepararCurl();															// Preparar requisição
+		/*$curl = self::_prepararCurl();															// Preparar requisição
 		curl_setopt_array($curl, array(
 			CURLOPT_URL => self::URL_BASE,
 			CURLOPT_POSTFIELDS => array(
@@ -166,38 +134,26 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		var_dump($resposta);																	// Exibindo dados obtidos
+		//print_r($resposta);																	// Exibindo dados obtidos
 
 		if ($resposta) {
-			$dom = new DOMDocument('1.0', 'UTF-8');												// Criar documento XML para percorrer os nós da resposta
-			// Verificar se o formato recebido é um XML válido. A expressão regular executada por "preg_replace" retira espaços vazios entre tags.
-			if (@$dom->loadXML(preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta))) {
-				// Realiza o "parse" da resposta a partir do primeiro nó no corpo do documento dentro do envelope
-				$resultado = array();
-				self::_converterNosXMLEmArray($dom->documentElement->firstChild->firstChild, $resultado);
-			} else
-				$resultado = false;
+			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
+			$resposta = preg_replace('/(<\?(\w+)\s(\w+)="\d\.\d"\s(\w+)="(\w+)\-\d"\?>)*//*', '', $resposta);
+			$resposta = "<Resultado>" . $resposta . "</Resultado>";								// Inserindo nó pai, caos ocorrea alguma repetição do nó MAIN
+			$xml = simplexml_load_string($resposta);											// Lendo a resposta
+			$resultado = json_encode($xml);														// Transformando em JSON o resultado
+			//$resultado = json_decode($resultado,true);										// Transformando em array o resultado
+			//print_r($resultado);
 		} else {
 			$this->_erro = 'Não foi possível conectar-se à Akna';
 			return false;
 		}
 
-		// Se ocorreu o registro do boleto de forma correta, retorna o resultado com Sucesso
-		if (is_array($resultado) && !array_key_exists('resultado', $resultado) && !isset($resultado['resultado']['erro'])){
-			$this->_erro = "Sucesso! ";
-			return $resultado;																	// Retorna o resultado com SUCESSO
-		}
+		$RequisicaoResultado = $requisicao . "¹" . $resultado;									// Unindo a Requisição e o resultado para serem retornados
+		$this->_erro = 'Conexão realizada com sucesso!';
 
-		//Imprime resposta recebida da Akna
-		echo "\n\n------------------------- ERRO OCORRIDO ------------------------------\nResposta recebida da Akna com ERRO: \n";
-		print_r($resultado);
-
-		// Se ocorreu erro no registro do boleto, retorna o resultado com o erro.
-		if (is_array($resultado) || array_key_exists('resultado', $resultado) || isset($resultado['resultado']['erro'])) {
-			$this->_erro = is_array($resultado) ? @$resultado['resultado']['erro'] ?: @$resultado['resultado']['erro'] : 'Erro inesperado na resposta da Akna';
-			return $resultado;																	// Retorna o resultado com FALHS
-		}
-		
+		return $RequisicaoResultado;															// Retornado a requisição e o resultado
+	*/	
 	}
 
 	/** Recebe uma string contendo o codigo do envio da SMS, realiza a chamada e retorna o resultado da Akna no formato de XML.
@@ -230,38 +186,26 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		var_dump($resposta);																	// Exibindo dados obtidos
+		//print_r($resposta);																	// Exibindo dados obtidos
 
 		if ($resposta) {
-			$dom = new DOMDocument('1.0', 'UTF-8');												// Criar documento XML para percorrer os nós da resposta
-			// Verificar se o formato recebido é um XML válido. A expressão regular executada por "preg_replace" retira espaços vazios entre tags.
-			if (@$dom->loadXML(preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta))) {
-				// Realiza o "parse" da resposta a partir do primeiro nó no corpo do documento dentro do envelope
-				$resultado = array();
-				self::_converterNosXMLEmArray($dom->documentElement->firstChild->firstChild, $resultado);
-			} else
-				$resultado = false;
+			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
+			$resposta = preg_replace('/(<\?(\w+)\s(\w+)="\d\.\d"\s(\w+)="(\w+)\-\d"\?>)*/', '', $resposta);
+			$resposta = "<Resultado>" . $resposta . "</Resultado>";								// Inserindo nó pai, caos ocorrea alguma repetição do nó MAIN
+			$xml = simplexml_load_string($resposta);											// Lendo a resposta
+			$resultado = json_encode($xml);														// Transformando em JSON o resultado
+			//$resultado = json_decode($resultado,true);										// Transformando em array o resultado
+			//print_r($resultado);
 		} else {
 			$this->_erro = 'Não foi possível conectar-se à Akna';
 			return false;
 		}
 
-		// Se ocorreu o registro do boleto de forma correta, retorna o resultado com Sucesso
-		if (is_array($resultado) && !array_key_exists('resultado', $resultado) && !isset($resultado['resultado']['erro'])){
-			$this->_erro = "Sucesso! ";
-			return $resultado;																	// Retorna o resultado com SUCESSO
-		}
+		$RequisicaoResultado = $requisicao . "¹" . $resultado;									// Unindo a Requisição e o resultado para serem retornados
+		$this->_erro = 'Conexão realizada com sucesso!';
 
-		//Imprime resposta recebida da Akna
-		echo "\n\n------------------------- ERRO OCORRIDO ------------------------------\nResposta recebida da Akna com ERRO: \n";
-		print_r($resultado);
-
-		// Se ocorreu erro no registro do boleto, retorna o resultado com o erro.
-		if (is_array($resultado) || array_key_exists('resultado', $resultado) || isset($resultado['resultado']['erro'])) {
-			$this->_erro = is_array($resultado) ? @$resultado['resultado']['erro'] ?: @$resultado['resultado']['erro'] : 'Erro inesperado na resposta da Akna';
-			return $resultado;																	// Retorna o resultado com FALHS
-		}
-		
+		return $RequisicaoResultado;															// Retornado a requisição e o resultado
+				
 	}
 	
 	/** Recebe uma string contendo o codigo do envio da SMS, realiza a chamada e retorna o resultado da Akna no formato de XML.
@@ -294,37 +238,25 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		var_dump($resposta);																	// Exibindo dados obtidos
+		//print_r($resposta);																	// Exibindo dados obtidos
 
 		if ($resposta) {
-			$dom = new DOMDocument('1.0', 'UTF-8');												// Criar documento XML para percorrer os nós da resposta
-			// Verificar se o formato recebido é um XML válido. A expressão regular executada por "preg_replace" retira espaços vazios entre tags.
-			if (@$dom->loadXML(preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta))) {
-				// Realiza o "parse" da resposta a partir do primeiro nó no corpo do documento dentro do envelope
-				$resultado = array();
-				self::_converterNosXMLEmArray($dom->documentElement->firstChild->firstChild, $resultado);
-			} else
-				$resultado = false;
+			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
+			$resposta = preg_replace('/(<\?(\w+)\s(\w+)="\d\.\d"\s(\w+)="(\w+)\-\d"\?>)*/', '', $resposta);
+			$resposta = "<Resultado>" . $resposta . "</Resultado>";								// Inserindo nó pai, caos ocorrea alguma repetição do nó MAIN
+			$xml = simplexml_load_string($resposta);											// Lendo a resposta
+			$resultado = json_encode($xml);														// Transformando em JSON o resultado
+			//$resultado = json_decode($resultado,true);										// Transformando em array o resultado
+			//print_r($resultado);
 		} else {
 			$this->_erro = 'Não foi possível conectar-se à Akna';
 			return false;
 		}
 
-		// Se ocorreu o registro do boleto de forma correta, retorna o resultado com Sucesso
-		if (is_array($resultado) && !array_key_exists('resultado', $resultado) && !isset($resultado['resultado']['erro'])){
-			$this->_erro = "Sucesso! ";
-			return $resultado;																	// Retorna o resultado com SUCESSO
-		}
+		$RequisicaoResultado = $requisicao . "¹" . $resultado;									// Unindo a Requisição e o resultado para serem retornados
+		$this->_erro = 'Conexão realizada com sucesso!';
 
-		//Imprime resposta recebida da Akna
-		echo "\n\n------------------------- ERRO OCORRIDO ------------------------------\nResposta recebida da Akna com ERRO: \n";
-		print_r($resultado);
-
-		// Se ocorreu erro no registro do boleto, retorna o resultado com o erro.
-		if (is_array($resultado) || array_key_exists('resultado', $resultado) || isset($resultado['resultado']['erro'])) {
-			$this->_erro = is_array($resultado) ? @$resultado['resultado']['erro'] ?: @$resultado['resultado']['erro'] : 'Erro inesperado na resposta da Akna';
-			return $resultado;																	// Retorna o resultado com FALHS
-		}
+		return $RequisicaoResultado;															// Retornado a requisição e o resultado
 		
 	}
 	
@@ -360,37 +292,25 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		var_dump($resposta);																	// Exibindo dados obtidos
+		//print_r($resposta);																	// Exibindo dados obtidos
 
 		if ($resposta) {
-			$dom = new DOMDocument('1.0', 'UTF-8');												// Criar documento XML para percorrer os nós da resposta
-			// Verificar se o formato recebido é um XML válido. A expressão regular executada por "preg_replace" retira espaços vazios entre tags.
-			if (@$dom->loadXML(preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta))) {
-				// Realiza o "parse" da resposta a partir do primeiro nó no corpo do documento dentro do envelope
-				$resultado = array();
-				self::_converterNosXMLEmArray($dom->documentElement->firstChild->firstChild, $resultado);
-			} else
-				$resultado = false;
+			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
+			$resposta = preg_replace('/(<\?(\w+)\s(\w+)="\d\.\d"\s(\w+)="(\w+)\-\d"\?>)*/', '', $resposta);
+			$resposta = "<Resultado>" . $resposta . "</Resultado>";								// Inserindo nó pai, caos ocorrea alguma repetição do nó MAIN
+			$xml = simplexml_load_string($resposta);											// Lendo a resposta
+			$resultado = json_encode($xml);														// Transformando em JSON o resultado
+			//$resultado = json_decode($resultado,true);										// Transformando em array o resultado
+			//print_r($resultado);
 		} else {
 			$this->_erro = 'Não foi possível conectar-se à Akna';
 			return false;
 		}
 
-		// Se ocorreu o registro do boleto de forma correta, retorna o resultado com Sucesso
-		if (is_array($resultado) && !array_key_exists('resultado', $resultado) && !isset($resultado['resultado']['erro'])){
-			$this->_erro = "Sucesso! ";
-			return $resultado;																	// Retorna o resultado com SUCESSO
-		}
+		$RequisicaoResultado = $requisicao . "¹" . $resultado;									// Unindo a Requisição e o resultado para serem retornados
+		$this->_erro = 'Conexão realizada com sucesso!';
 
-		//Imprime resposta recebida da Akna
-		echo "\n\n------------------------- ERRO OCORRIDO ------------------------------\nResposta recebida da Akna com ERRO: \n";
-		print_r($resultado);
-
-		// Se ocorreu erro no registro do boleto, retorna o resultado com o erro.
-		if (is_array($resultado) || array_key_exists('resultado', $resultado) || isset($resultado['resultado']['erro'])) {
-			$this->_erro = is_array($resultado) ? @$resultado['resultado']['erro'] ?: @$resultado['resultado']['erro'] : 'Erro inesperado na resposta da Akna';
-			return $resultado;																	// Retorna o resultado com FALHS
-		}
+		return $RequisicaoResultado;															// Retornado a requisição e o resultado
 		
 	}
 
