@@ -49,77 +49,6 @@ class AknaWebService
 		return $curl;
 	}
 
-	/** Função para eliminar caracteres especiais
-	 * 
-	 */
-	function caractereEspecial($string) {
-		
-		$string = preg_replace("/&([a-z])[a-z]+;/i", "$1", htmlentities(trim($string)));
-		
-		//Retornando o resultado convertido
-		return $string;	
-	}
-
-	/** Função que realiza a chamada e retorna o resultado da Akna no formato de XML.
-	 * @return array Transcrição da resposta da Akna em array
-	 */
-	function conectApiListaEquipes()
-	{
-		$this->_erro = false;
-		
-		// Montar envelope contendo a requisição do serviço
-		$requisicao = '<?xml version="1.0" encoding="UTF-8"?><main><emkt trans="15.50"></emkt></main>';
-
-		//Imprimindo as informações que serão enviadas por XML
-		//echo "Requisicao XML: ";
-		//print_r($requisicao);
-		
-		$curl = self::_prepararCurl();															// Preparar requisição sem cabeçalho, todos os dados 
-		curl_setopt_array($curl, array(															// devem ser enviados via POSTFIELDS e a senha sempre em "MD5"
-			CURLOPT_URL => self::URL_BASE,
-			CURLOPT_POSTFIELDS => array(
-				'User'=> $this->_User,
-				'Pass'=> md5($this->_Pass),
-				'XML'=> $requisicao,
-				'Client'=> $this->_Client,
-				'Remetente'=> $this->_Remetente
-				)
-		));
-		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
-		curl_close($curl);
-		//print_r($resposta);																	// Exibindo dados obtidos
-
-		if ($resposta) {
-			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
-			$resposta = preg_replace('/(<\?(\w+)\s(\w+)="\d\.\d"\s(\w+)="(\w+)\-\d"\?>)*/', '', $resposta);
-			$resposta = "<Resultado>" . $resposta . "</Resultado>";								// Inserindo nó pai, caos ocorrea alguma repetição do nó MAIN
-			$xml = simplexml_load_string($resposta);											// Lendo a resposta
-			
-			$resultado = json_encode($xml);														// Transformando em JSON o resultado 
-			$resultado = json_decode($resultado,true);											// Transformando em array o resultado
-			
-			for ($i=0;$i<count($resultado['MAIN']);$i++) {										// Pegando as respostas quando for mais de uma
-				if (count($resultado['MAIN']) == 1)
-					$resultadoShort = $resultado['MAIN']['EMKT']['RETURN'];
-				else
-					$resultadoShort[$i] = $resultado['MAIN'][$i]['EMKT']['RETURN'];
-			}
-		} else {
-			$this->_erro = 'Não foi possível conectar-se à Akna';
-			return false;
-		}
-
-		$resultadoShort = array("RETURN"=> $resultadoShort);									// Motando array de retorno
-		
-		// Unindo a Requisição e o resultado para serem retornados
-		$RequisicaoResultado = $requisicao . "¹" . json_encode($resultadoShort) . "¹" . json_encode($resultado);
-		$this->_erro = 'Conexão realizada com sucesso!';
-		//print_r($RequisicaoResultado);
-
-		return $RequisicaoResultado;															// Retornado a requisição e o resultado
-		
-	}
-
 	/** Função recebe um array com os parametros e realiza a conexão, é destinada para o envio de SMS para os contatos.
 	 * CAMPOS NÃO OBRIGATÓRIOS: "remetente" quando se tem somente um cadastrado e "identificador"
 	 * CAMPOS OBRIGATÓRIOS: "telefone" e "mensagem" que estão ambos dentro de <sms>...</sms> e também "encurtar url" que deve ser sempre "S".
@@ -132,7 +61,7 @@ class AknaWebService
 	{
 		$this->_erro = false;
 		
-		// Montando a requisição dsem inseri o atributo "identificador" que não é obrigatório
+		// Montando a requisição sem inseri o atributo "identificador" que não é obrigatório
 		$requisicao = '<?xml version="1.0" encoding="UTF-8"?><main><emkt trans="40.01"><remetente>Conecta</remetente><encurtar_url>S</encurtar_url>';
 		for ($i=0;$i<count($parametros['sms']);$i++) {
 			$requisicao .= "<sms><telefone>" . $parametros['sms'][$i]['telefone'] . "</telefone>";
@@ -140,7 +69,7 @@ class AknaWebService
 		}
 		$requisicao .= '</emkt></main>';														// Fecha o nó da requisição, o corpo da mensagem e o envelope
 
-		//echo "Requisicao XML: ";																//Imprimindo as informações que serão enviadas por XML
+		//echo "Requisicao XML: ";																// Imprimindo as informações que serão enviadas por XML
 		//print_r($requisicao);echo "\n\n";
 		
 		$curl = self::_prepararCurl();															// Preparar requisição sem cabeçalho, todos os dados 
@@ -156,7 +85,9 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		//print_r($resposta);																	// Exibindo dados obtidos
+		//print_r($resposta);echo "\n\n";														// Exibindo dados obtidos
+
+		$mensagemInformativa = '';																// Mensagem de retorno
 
 		if ($resposta) {
 			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
@@ -168,10 +99,30 @@ class AknaWebService
 			$resultado = json_decode($resultado,true);											// Transformando em array o resultado
 			//print_r($resultado);echo "\n\n";
 			for ($i=0;$i<count($resultado['MAIN']);$i++) {										// Pegando as respostas quando for mais de uma
-				if (count($resultado['MAIN']) == 1)
+				if (count($resultado['MAIN']) == 1){
 					$resultadoShort = $resultado['MAIN']['EMKT']['RETURN'];
-				else
+					$mensagemInformativa .= $resultado['MAIN']['EMKT']['RETURN'];
+				} else {
 					$resultadoShort[$i] = $resultado['MAIN'][$i]['EMKT']['RETURN'];
+					$mensagemInformativa .= $resultado['MAIN'][$i]['EMKT']['RETURN'];
+				}
+			}
+
+			$this->_erro = $mensagemInformativa;												// Mensagem de SUCESSO ou ERRO
+			
+			if (isset($resultado['AKNA'])) {													// Tratando quando houver algum erro no texto da mensagem
+				for ($i=0;$i<count($resultado['AKNA']);$i++) {									
+					if (isset($resultado['AKNA'][$i]['FUNC'])){
+						$resultadoShort[$i] = $resultado['AKNA'][$i]['FUNC']['RETURN'];
+						$mensagemInformativa .= $resultado['AKNA'][$i]['FUNC']['RETURN'];
+					}						
+					if (isset($resultado['AKNA'][$i]['EMKT'])){
+						$resultadoShort[$i] = $resultado['AKNA'][$i]['EMKT']['RETURN'];
+						$mensagemInformativa .= $resultado['AKNA'][$i]['EMKT']['RETURN'];
+					}
+				}
+				
+				$this->_erro = $mensagemInformativa;											// Mensagem de ERRO
 			}
 		} else {
 			$this->_erro = 'Não foi possível conectar-se à Akna';
@@ -182,14 +133,13 @@ class AknaWebService
 		//print_r($resultadoShort);echo "\n\n";
 		// Unindo a Requisição e o resultado para serem retornados
 		$RequisicaoResultado = $requisicao . "¹" . json_encode($resultadoShort) . "¹" . json_encode($resultado);
-		$this->_erro = 'Conexão realizada com sucesso!';
 		//print_r($RequisicaoResultado);echo "\n\n";
 
 		return $RequisicaoResultado;															// Retornado a requisição e o resultado
 		
 	}
 
-	/** Recebe uma string contendo o codigo do envio da SMS, realiza a chamada e retorna o resultado da Akna no formato de XML.
+	/** Função recebe uma string contendo o codigo de retorno do envio da SMS para poder verificar o status
 	 * @param string $parametro	string com o cod do envio
 	 * @return array Transcrição da resposta da Akna em array
 	 */
@@ -199,10 +149,10 @@ class AknaWebService
 		
 		// Montar envelope contendo a requisição do serviço
 		$requisicao = '<?xml version="1.0" encoding="UTF-8"?><main><emkt trans="40.02">';
-		$requisicao .= "<sms><codigo>" . htmlspecialchars($parametro['codigo']) . "</codigo></sms>";			
+		$requisicao .= "<sms><codigo>" . $parametro . "</codigo></sms>";			
 		$requisicao .= '</emkt></main>';														// Fecha o nó da requisição, o corpo da mensagem e o envelope
 
-		//echo "Requisicao XML: ";																//Imprimindo as informações que serão enviadas por XML
+		//echo "Requisicao XML: ";																// Imprimindo as informações que serão enviadas por XML
 		//print_r($requisicao);echo "\n\n";
 		
 		$curl = self::_prepararCurl();															// Preparar requisição sem cabeçalho, todos os dados 
@@ -218,7 +168,7 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		//print_r($resposta);																	// Exibindo dados obtidos
+		//print_r($resposta);echo "\n\n";														// Exibindo dados obtidos
 
 		if ($resposta) {
 			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
@@ -231,27 +181,40 @@ class AknaWebService
 			//print_r($resultado);echo "\n\n";
 			for ($i=0;$i<count($resultado['MAIN']);$i++) {										// Pegando as respostas quando for mais de uma
 				if (count($resultado['MAIN']) == 1)
-					$resultadoShort = $resultado['MAIN']['EMKT']['RETURN'];
+					$resultadoShort = $resultado['MAIN']['EMKT']['SMS'];
 				else
-					$resultadoShort[$i] = $resultado['MAIN'][$i]['EMKT']['RETURN'];
+					$resultadoShort[$i] = $resultado['MAIN'][$i]['EMKT']['SMS'];
 			}
+			
+			$mensagemInformativa = '';
+			
+			if (isset($resultado['MAIN']['EMKT']['RETURN'])) {
+				$resultadoShort = $resultado['MAIN']['EMKT']['RETURN'];
+				$mensagemInformativa .= $resultado['MAIN']['EMKT']['RETURN'];
+				$resultadoShort = array("RETURN"=> $resultadoShort);							// Motando array de retorno
+				//print_r($resultadoShort);echo "\n\n";
+				$this->_erro = $mensagemInformativa;											// Mensagem de ERRO
+			} else {
+				$resultadoShort = array("SMS"=> $resultadoShort);								// Motando array de retorno
+				//print_r($resultadoShort);echo "\n\n";
+				$this->_erro = $mensagemInformativa;											// Mensagem de SUCESSO
+			}
+
 		} else {
 			$this->_erro = 'Não foi possível conectar-se à Akna';
 			return false;
 		}
 
-		$resultadoShort = array("RETURN"=> $resultadoShort);									// Motando array de retorno
-		//print_r($resultadoShort);echo "\n\n";
 		// Unindo a Requisição e o resultado para serem retornados
 		$RequisicaoResultado = $requisicao . "¹" . json_encode($resultadoShort) . "¹" . json_encode($resultado);
-		$this->_erro = 'Conexão realizada com sucesso!';
 		//print_r($RequisicaoResultado);echo "\n\n";
 
 		return $RequisicaoResultado;															// Retornado a requisição e o resultado
 			
 	}
 	
-	/** Recebe uma string contendo o codigo do envio da SMS, realiza a chamada e retorna o resultado da Akna no formato de XML.
+	/** Função Recebe uma string contendo o codigo de retorno do envio da SMS para poder verificar 
+	 * se houve resposta do destinatário
 	 * @param string $parametro	string com o cod do envio
 	 * @return array Transcrição da resposta da Akna em array
 	 */
@@ -261,10 +224,10 @@ class AknaWebService
 		
 		// Montar envelope contendo a requisição do serviço
 		$requisicao = '<?xml version="1.0" encoding="UTF-8"?><main><emkt trans="40.03">';
-		$requisicao .= "<sms><codigo>" . htmlspecialchars($parametro['codigo']) . "</codigo></sms>";			
+		$requisicao .= "<sms><codigo>" . $parametro . "</codigo></sms>";			
 		$requisicao .= '</emkt></main>';														// Fecha o nó da requisição, o corpo da mensagem e o envelope
 
-		//echo "Requisicao XML: ";																//Imprimindo as informações que serão enviadas por XML
+		//echo "Requisicao XML: ";																// Imprimindo as informações que serão enviadas por XML
 		//print_r($requisicao);echo "\n\n";
 		
 		$curl = self::_prepararCurl();															// Preparar requisição sem cabeçalho, todos os dados 
@@ -280,7 +243,7 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		//print_r($resposta);																	// Exibindo dados obtidos
+		//print_r($resposta);echo "\n\n";														// Exibindo dados obtidos
 
 		if ($resposta) {
 			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
@@ -293,20 +256,32 @@ class AknaWebService
 			//print_r($resultado);echo "\n\n";
 			for ($i=0;$i<count($resultado['MAIN']);$i++) {										// Pegando as respostas quando for mais de uma
 				if (count($resultado['MAIN']) == 1)
-					$resultadoShort = $resultado['MAIN']['EMKT']['RETURN'];
+					$resultadoShort = $resultado['MAIN']['EMKT']['SMS'];
 				else
-					$resultadoShort[$i] = $resultado['MAIN'][$i]['EMKT']['RETURN'];
+					$resultadoShort[$i] = $resultado['MAIN'][$i]['EMKT']['SMS'];
 			}
+			
+			$mensagemInformativa = '';
+			
+			if (isset($resultado['MAIN']['EMKT']['RETURN'])) {
+				$resultadoShort = $resultado['MAIN']['EMKT']['RETURN'];
+				$mensagemInformativa .= $resultado['MAIN']['EMKT']['RETURN'];
+				$resultadoShort = array("RETURN"=> $resultadoShort);							// Motando array de retorno
+				//print_r($resultadoShort);echo "\n\n";
+				$this->_erro = $mensagemInformativa;											// Mensagem de ERRO
+			} else {
+				$resultadoShort = array("SMS"=> $resultadoShort);								// Motando array de retorno
+				//print_r($resultadoShort);echo "\n\n";
+				$this->_erro = $mensagemInformativa;											// Mensagem de SUCESSO
+			}
+
 		} else {
 			$this->_erro = 'Não foi possível conectar-se à Akna';
 			return false;
 		}
 
-		$resultadoShort = array("RETURN"=> $resultadoShort);									// Motando array de retorno
-		//print_r($resultadoShort);echo "\n\n";
 		// Unindo a Requisição e o resultado para serem retornados
 		$RequisicaoResultado = $requisicao . "¹" . json_encode($resultadoShort) . "¹" . json_encode($resultado);
-		$this->_erro = 'Conexão realizada com sucesso!';
 		//print_r($RequisicaoResultado);echo "\n\n";
 
 		return $RequisicaoResultado;															// Retornado a requisição e o resultado
@@ -344,7 +319,7 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		//print_r($resposta);																	// Exibindo dados obtidos
+		//print_r($resposta);echo "\n\n";														// Exibindo dados obtidos
 
 		if ($resposta) {
 			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
@@ -357,9 +332,9 @@ class AknaWebService
 			//print_r($resultado);echo "\n\n";
 			for ($i=0;$i<count($resultado['MAIN']);$i++) {										// Pegando as respostas quando for mais de uma
 				if (count($resultado['MAIN']) == 1)
-					$resultadoShort = $resultado['MAIN']['EMKT']['RETURN'];
+					$resultadoShort = $resultado['MAIN']['EMKT'];
 				else
-					$resultadoShort[$i] = $resultado['MAIN'][$i]['EMKT']['RETURN'];
+					$resultadoShort[$i] = $resultado['MAIN'][$i]['EMKT'];
 			}
 		} else {
 			$this->_erro = 'Não foi possível conectar-se à Akna';
