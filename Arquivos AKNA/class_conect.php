@@ -69,9 +69,6 @@ class AknaWebService
 		}
 		$requisicao .= '</emkt></main>';														// Fecha o nó da requisição, o corpo da mensagem e o envelope
 
-		//echo "Requisicao XML: ";																// Imprimindo as informações que serão enviadas por XML
-		//print_r($requisicao);echo "\n\n";
-		
 		$curl = self::_prepararCurl();															// Preparar requisição sem cabeçalho, todos os dados 
 		curl_setopt_array($curl, array(															// devem ser enviados via POSTFIELDS e a senha sempre em "MD5"
 			CURLOPT_URL => self::URL_BASE,
@@ -85,7 +82,6 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		//print_r($resposta);echo "\n\n";														// Exibindo dados obtidos
 
 		$mensagemInformativa = '';																// Mensagem de retorno
 
@@ -97,7 +93,7 @@ class AknaWebService
 			
 			$resultado = json_encode($xml);														// Transformando em JSON o resultado 
 			$resultado = json_decode($resultado,true);											// Transformando em array o resultado
-			//print_r($resultado);echo "\n\n";
+		
 			for ($i=0;$i<count($resultado['MAIN']);$i++) {										// Pegando as respostas quando for mais de uma
 				if (count($resultado['MAIN']) == 1){
 					$resultadoShort = $resultado['MAIN']['EMKT']['RETURN'];
@@ -130,10 +126,8 @@ class AknaWebService
 		}
 
 		$resultadoShort = array("RETURN"=> $resultadoShort);									// Motando array de retorno
-		//print_r($resultadoShort);echo "\n\n";
 		// Unindo a Requisição e o resultado para serem retornados
 		$RequisicaoResultado = $requisicao . "¹" . json_encode($resultadoShort) . "¹" . json_encode($resultado);
-		//print_r($RequisicaoResultado);echo "\n\n";
 
 		return $RequisicaoResultado;															// Retornado a requisição e o resultado
 		
@@ -152,9 +146,6 @@ class AknaWebService
 		$requisicao = '<?xml version="1.0" encoding="UTF-8"?><main><emkt trans="40.02">';
 		$requisicao .= "<sms><codigo>" . $parametro . "</codigo></sms>";			
 		$requisicao .= '</emkt></main>';														// Fecha o nó da requisição, o corpo da mensagem e o envelope
-
-		//echo "Requisicao XML: ";																// Imprimindo as informações que serão enviadas por XML
-		//print_r($requisicao);echo "\n\n";
 		
 		$curl = self::_prepararCurl();															// Preparar requisição sem cabeçalho, todos os dados 
 		curl_setopt_array($curl, array(															// devem ser enviados via POSTFIELDS e a senha sempre em "MD5"
@@ -169,7 +160,6 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		//print_r($resposta);echo "\n\n";														// Exibindo dados obtidos
 
 		if ($resposta) {
 			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
@@ -179,7 +169,7 @@ class AknaWebService
 			
 			$resultado = json_encode($xml);														// Transformando em JSON o resultado 
 			$resultado = json_decode($resultado,true);											// Transformando em array o resultado
-			//print_r($resultado);echo "\n\n";
+			
 			for ($i=0;$i<count($resultado['MAIN']);$i++) {										// Pegando as respostas quando for mais de uma
 				if (count($resultado['MAIN']) == 1)
 					$resultadoShort = $resultado['MAIN']['EMKT']['SMS'];
@@ -192,13 +182,11 @@ class AknaWebService
 			if (isset($resultado['MAIN']['EMKT']['RETURN'])) {
 				$resultadoShort = $resultado['MAIN']['EMKT']['RETURN'];
 				$mensagemInformativa .= $resultadoShort;
-				$resultadoShort = array("RETURN"=> $resultadoShort);							// Motando array de retorno
-				//print_r($resultadoShort);echo "\n\n";
+				$resultadoShort = array("RETURN"=> $resultadoShort);							// Motando array de retorno			
 				$this->_erro = $mensagemInformativa;											// Mensagem de ERRO
 			} else {
 				$resultadoShort = array("SMS"=> $resultadoShort);								// Motando array de retorno
-				$mensagemInformativa .= json_encode($resultadoShort);
-				//print_r($resultadoShort);echo "\n\n";
+				$mensagemInformativa .= json_encode($resultadoShort);			
 				$this->_erro = $mensagemInformativa;											// Mensagem de SUCESSO
 			}
 
@@ -209,7 +197,6 @@ class AknaWebService
 
 		// Unindo a Requisição e o resultado para serem retornados
 		$RequisicaoResultado = $requisicao . "¹" . json_encode($resultadoShort) . "¹" . json_encode($resultado);
-		//print_r($RequisicaoResultado);echo "\n\n";
 
 		return $RequisicaoResultado;															// Retornado a requisição e o resultado
 			
@@ -228,9 +215,6 @@ class AknaWebService
 		$requisicao = '<?xml version="1.0" encoding="UTF-8"?><main><emkt trans="40.03">';
 		$requisicao .= "<sms><codigo>" . $parametro . "</codigo></sms>";			
 		$requisicao .= '</emkt></main>';														// Fecha o nó da requisição, o corpo da mensagem e o envelope
-
-		//echo "Requisicao XML: ";																// Imprimindo as informações que serão enviadas por XML
-		//print_r($requisicao);echo "\n\n";
 		
 		$curl = self::_prepararCurl();															// Preparar requisição sem cabeçalho, todos os dados 
 		curl_setopt_array($curl, array(															// devem ser enviados via POSTFIELDS e a senha sempre em "MD5"
@@ -245,7 +229,6 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		//print_r($resposta);echo "\n\n";														// Exibindo dados obtidos
 
 		if ($resposta) {
 			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
@@ -255,7 +238,7 @@ class AknaWebService
 			
 			$resultado = json_encode($xml);														// Transformando em JSON o resultado 
 			$resultado = json_decode($resultado,true);											// Transformando em array o resultado
-			//print_r($resultado);echo "\n\n";
+		
 			for ($i=0;$i<count($resultado['MAIN']);$i++) {										// Pegando as respostas quando for mais de uma
 				if (count($resultado['MAIN']) == 1)
 					$resultadoShort = $resultado['MAIN']['EMKT']['SMS'];
@@ -269,12 +252,10 @@ class AknaWebService
 				$resultadoShort = $resultado['MAIN']['EMKT']['RETURN'];
 				$mensagemInformativa .= $resultadoShort;
 				$resultadoShort = array("RETURN"=> $resultadoShort);							// Motando array de retorno
-				//print_r($resultadoShort);echo "\n\n";
 				$this->_erro = $mensagemInformativa;											// Mensagem de ERRO
 			} else {
 				$resultadoShort = array("SMS"=> $resultadoShort);								// Motando array de retorno
 				$mensagemInformativa .= json_encode($resultadoShort);
-				//print_r($resultadoShort);echo "\n\n";
 				$this->_erro = $mensagemInformativa;											// Mensagem de SUCESSO
 			}
 
@@ -285,7 +266,6 @@ class AknaWebService
 
 		// Unindo a Requisição e o resultado para serem retornados
 		$RequisicaoResultado = $requisicao . "¹" . json_encode($resultadoShort) . "¹" . json_encode($resultado);
-		//print_r($RequisicaoResultado);echo "\n\n";
 
 		return $RequisicaoResultado;															// Retornado a requisição e o resultado
 		
@@ -337,9 +317,6 @@ class AknaWebService
 			$requisicao .= "<fim>" . $parametros['sms']['clique']['fim'] . "</fim></clique>";
 		}
 		$requisicao .= '</sms></emkt></main>';													// Fecha o nó da requisição, o corpo da mensagem e o envelope
-
-		//echo "Requisicao XML: ";																//Imprimindo as informações que serão enviadas por XML
-		//print_r($requisicao);echo "\n\n";
 		
 		$curl = self::_prepararCurl();															// Preparar requisição sem cabeçalho, todos os dados 
 		curl_setopt_array($curl, array(															// devem ser enviados via POSTFIELDS e a senha sempre em "MD5"
@@ -354,8 +331,7 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		//print_r($resposta);echo "\n\n";														// Exibindo dados obtidos
-
+	
 		if ($resposta) {
 			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
 			$resposta = preg_replace('/(<\?(\w+)\s(\w+)="\d\.\d"\s(\w+)="(\w+)\-\d"\?>)*/', '', $resposta);
@@ -364,7 +340,7 @@ class AknaWebService
 			
 			$resultado = json_encode($xml);														// Transformando em JSON o resultado 
 			$resultado = json_decode($resultado,true);											// Transformando em array o resultado
-			//print_r($resultado);echo "\n\n";
+	
 			for ($i=0;$i<count($resultado['MAIN']);$i++) {										// Pegando as respostas quando for mais de uma
 				if (count($resultado['MAIN']) == 1)
 					$resultadoShort = $resultado['MAIN']['EMKT']['PROCESSO'];
@@ -378,12 +354,12 @@ class AknaWebService
 				$resultadoShort = $resultado['MAIN']['EMKT']['RETURN'];
 				$mensagemInformativa .= $resultadoShort;
 				$resultadoShort = array("RETURN"=> $resultadoShort);							// Motando array de retorno
-				//print_r($resultadoShort);echo "\n\n";
+		
 				$this->_erro = $mensagemInformativa;											// Mensagem de ERRO
 			} else {
 				$resultadoShort = array("PROCESSO"=> $resultadoShort);							// Motando array de retorno
 				$mensagemInformativa .= json_encode($resultadoShort);
-				//print_r($resultadoShort);echo "\n\n";
+		
 				$this->_erro = $mensagemInformativa;											// Mensagem de SUCESSO
 			}
 
@@ -394,7 +370,6 @@ class AknaWebService
 
 		// Unindo a Requisição e o resultado para serem retornados
 		$RequisicaoResultado = $requisicao . "¹" . json_encode($resultadoShort) . "¹" . json_encode($resultado);
-		//print_r($RequisicaoResultado);echo "\n\n";
 
 		return $RequisicaoResultado;															// Retornado a requisição e o resultado
 		
@@ -413,9 +388,6 @@ class AknaWebService
 		$requisicao = '<?xml version="1.0" encoding="UTF-8"?><main><emkt trans="40.05">';
 		$requisicao .= "<processo>" . $parametro . "</processo>";
 		$requisicao .= '</emkt></main>';														// Fecha o nó da requisição, o corpo da mensagem e o envelope
-
-		//echo "Requisicao XML: ";																// Imprimindo as informações que serão enviadas por XML
-		//print_r($requisicao);echo "\n\n";
 		
 		$curl = self::_prepararCurl();															// Preparar requisição sem cabeçalho, todos os dados 
 		curl_setopt_array($curl, array(															// devem ser enviados via POSTFIELDS e a senha sempre em "MD5"
@@ -430,8 +402,7 @@ class AknaWebService
 		));
 		$resposta = curl_exec($curl);															// Obtendo resultado da comunicação
 		curl_close($curl);
-		//print_r($resposta);echo "\n\n";														// Exibindo dados obtidos
-
+	
 		if ($resposta) {
 			$resposta = preg_replace('/(?<=>)\\s+(?=<)/', '', $resposta);						// Retirando os espaços entre os nós e depois o cabeçalho do XML
 			$resposta = preg_replace('/(<\?(\w+)\s(\w+)="\d\.\d"\s(\w+)="(\w+)\-\d"\?>)*/', '', $resposta);
@@ -440,7 +411,7 @@ class AknaWebService
 			
 			$resultado = json_encode($xml);														// Transformando em JSON o resultado 
 			$resultado = json_decode($resultado,true);											// Transformando em array o resultado
-			//print_r($resultado);echo "\n\n";
+	
 			for ($i=0;$i<count($resultado['MAIN']);$i++) {										// Pegando as respostas quando for mais de uma
 				if (count($resultado['MAIN']) == 1)
 					$resultadoShort = $resultado['MAIN']['EMKT'];
@@ -454,12 +425,10 @@ class AknaWebService
 				$resultadoShort = $resultado['MAIN']['EMKT']['RETURN'];
 				$mensagemInformativa .= $resultadoShort;
 				$resultadoShort = array("RETURN"=> $resultadoShort);							// Motando array de retorno
-				//print_r($resultadoShort);echo "\n\n";
 				$this->_erro = $mensagemInformativa;											// Mensagem de ERRO
 			} else {
 				$resultadoShort = array("EMKT"=> $resultadoShort);							// Motando array de retorno
-				$mensagemInformativa .= json_encode($resultadoShort);
-				//print_r($resultadoShort);echo "\n\n";
+				$mensagemInformativa .= json_encode($resultadoShort);	
 				$this->_erro = $mensagemInformativa;											// Mensagem de SUCESSO
 			}
 
@@ -470,7 +439,6 @@ class AknaWebService
 
 		// Unindo a Requisição e o resultado para serem retornados
 		$RequisicaoResultado = $requisicao . "¹" . json_encode($resultadoShort) . "¹" . json_encode($resultado);
-		//print_r($RequisicaoResultado);echo "\n\n";
 
 		return $RequisicaoResultado;															// Retornado a requisição e o resultado
 		
