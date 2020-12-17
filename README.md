@@ -5,12 +5,15 @@ INFORMAÇÕES DE DESENVOLVIMENTO
 - Desenvolvimento API Huggy
 - Desenvolvimento API BB
 - Desenvolvimento API Zabbix
+- Desenvolvimento Site
 - Desenvolvimento NODEjs
 
 
 Neste diretório estão armazenados os arquivos que contém os procedimentos de execução de cada interação(não incluso o arquivo de conexão com banco de dados), para que seja feito um controle de versão dos códigos e assim vários usuários poderem realizar o envio de atualizações e buscar as novas atualizações feitas pelos outros.
 
 Breve descrição
+- Site:
+    - Arquivos utilizados no novo site
 - Huggy:
     - Plataforma de comunicação via Redes Socias. Arquvios possuem inserção de informações dentro dos chats ativos
 - BB:
@@ -21,7 +24,6 @@ Breve descrição
     - Teste iniciais de apredizagem do NODEjs. Iniciando estudo com a linguagem Javascript
 - Akna:
     - Plataforma de envio de SMS através da API
-
 
 
 >>  Obs.: Se você teve acesso a esse conteúdo e o qual não foi detinado diretamente à você, desconsidere e não o utilize pois o mesmo contém informações retritas do proprietário.
